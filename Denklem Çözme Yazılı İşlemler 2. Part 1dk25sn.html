@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Denklem Çözme Yazılı İşlemler 2. Part</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 580px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1a365d;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        p.subtitle {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f1f5f9;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .timer {
+            color: #e11d48;
+            font-size: 18px;
+        }
+
+        .question-box {
+            font-size: 22px;
+            font-weight: 600;
+            color: #0f172a;
+            margin: 20px 0;
+            min-height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px dashed #cbd5e1;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px;
+            font-size: 18px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #0284c7;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        button {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        button:hover {
+            background: #0369a1;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .results {
+            text-align: left;
+        }
+
+        .results h2 {
+            text-align: center;
+            color: #0f172a;
+            margin-bottom: 15px;
+        }
+
+        .result-summary {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .badge.correct {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge.incorrect {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .scroll-area {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <!-- Başlangıç Ekranı -->
+    <div id="start-screen">
+        <h1>Denklem Çözme Yazılı İşlemler 2. Part</h1>
+        <p class="subtitle">
+            Görseldeki 10 adet denklem çözme problemini tamamlayın.<br><br>
+            Cevap negatif sayı ise önüne eksi (-) işareti koymayı unutmayın.<br><br>
+            <strong>Hedef Süre: 1 dakika 25 saniye (85sn)</strong>
+        </p>
+        <button onclick="startTest()">Testi Başlat</button>
+    </div>
+
+    <!-- Test Ekranı -->
+    <div id="quiz-screen" class="hidden">
+        <div class="stats-bar">
+            <span>Soru: <span id="current-q">1</span>/10</span>
+            <span class="timer" id="timer">01:25</span>
+        </div>
+
+        <div class="question-box" id="question-text">
+            Yükleniyor...
+        </div>
+
+        <form id="quiz-form" onsubmit="handleAnswer(event)">
+            <div class="input-group">
+                <input type="text" id="answer-input" placeholder="Cevabınız" required autofocus autocomplete="off">
+                <button type="submit">İleri</button>
+            </div>
+            <div class="input-hint">Sadece istenen bilinmeyenin değerini yazınız (Örn: 5 veya -3).</div>
+        </form>
+    </div>
+
+    <!-- Sonuç Ekranı -->
+    <div id="result-screen" class="hidden">
+        <div class="results">
+            <h2>Test Tamamlandı!</h2>
+            
+            <div class="result-summary">
+                <div class="result-item">
+                    <span>Geçen Süre:</span>
+                    <strong id="final-time">00:00</strong>
+                </div>
+                <div class="result-item">
+                    <span>Süre Durumu:</span>
+                    <strong id="time-status">-</strong>
+                </div>
+                <div class="result-item">
+                    <span>Doğru Sayısı:</span>
+                    <strong id="correct-count" style="color: #16a34a;">0</strong>
+                </div>
+                <div class="result-item">
+                    <span>Yanlış Sayısı:</span>
+                    <strong id="wrong-count" style="color: #dc2626;">0</strong>
+                </div>
+            </div>
+
+            <div class="scroll-area" id="details-list">
+                <!-- Detaylar -->
+            </div>
+
+            <button onclick="resetTest()" style="width: 100%;">Yeni Sorularla Tekrar Dene</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let questions = [];
+    let currentIndex = 0;
+    let userAnswers = [];
+    let timerInterval = null;
+    let secondsPassed = 0;
+    const TIME_LIMIT = 85; // 1 dakika 25 saniye = 85 saniye
+
+    function getRandomInt(min, max, exclude = []) {
+        let val;
+        do {
+            val = Math.floor(Math.random() * (max - min + 1)) + min;
+        } while (exclude.includes(val));
+        return val;
+    }
+
+    function generateQuestions() {
+        const templates = [
+            // 1. 7x - 5 = 2x + 20 ise x kaçtır?
+            () => {
+                let x = getRandomInt(-8, 10, [0]);
+                let A = getRandomInt(4, 9);
+                let C = getRandomInt(1, A - 1);
+                let B = getRandomInt(-15, 15, [0]);
+                let D = (A - C) * x + B;
+                let bSign = B >= 0 ? `+ ${B}` : `– ${Math.abs(B)}`;
+                let dSign = D >= 0 ? `+ ${D}` : `– ${Math.abs(D)}`;
+                let cStr = C === 1 ? 'x' : `${C}x`;
+                return {
+                    text: `${A}x ${bSign} = ${cStr} ${dSign} ise x kaçtır?`,
+                    ans: x,
+                    ansStr: `${x}`
+                };
+            },
+            // 2. 15 - 4a = 3(a-5) ise a kaçtır?
+            () => {
+                let a = getRandomInt(-5, 8, [0]);
+                let D = getRandomInt(2, 5);
+                let E = getRandomInt(2, 5);
+                let F = getRandomInt(2, 8);
+                let C = (D + E) * a - E * F;
+                return {
+                    text: `${C} – ${D}a = ${E}(a – ${F}) ise a kaçtır?`,
+                    ans: a,
+                    ansStr: `${a}`
+                };
+            },
+            // 3. 2y + 9 - y = 18 ise y kaçtır?
+            () => {
+                let y = getRandomInt(-10, 12, [0]);
+                let A = getRandomInt(3, 6);
+                let C = getRandomInt(1, A - 1);
+                let B = getRandomInt(2, 15);
+                let D = (A - C) * y + B;
+                let cStr = C === 1 ? 'y' : `${C}y`;
+                return {
+                    text: `${A}y + ${B} – ${cStr} = ${D} ise y kaçtır?`,
+                    ans: y,
+                    ansStr: `${y}`
+                };
+            },
+            // 4. 5(n-2) = 3n + 4 ise n kaçtır?
+            () => {
+                let n = getRandomInt(-6, 10, [0]);
+                let A = getRandomInt(3, 6);
+                let B = getRandomInt(2, 6);
+                let C = getRandomInt(1, A - 1);
+                let D = A * (n - B) - C * n;
+                let dSign = D >= 0 ? `+ ${D}` : `– ${Math.abs(D)}`;
+                let cStr = C === 1 ? 'n' : `${C}n`;
+                return {
+                    text: `${A}(n – ${B}) = ${cStr} ${dSign} ise n kaçtır?`,
+                    ans: n,
+                    ansStr: `${n}`
+                };
+            },
+            // 5. -3x + 8 = 2 - x ise x kaçtır?
+            () => {
+                let x = getRandomInt(-8, 8, [0]);
+                let A = getRandomInt(2, 5);
+                let B = getRandomInt(2, 15);
+                let C = (1 - A) * x + B;
+                return {
+                    text: `–${A}x + ${B} = ${C} – x ise x kaçtır?`,
+                    ans: x,
+                    ansStr: `${x}`
+                };
+            },
+            // 6. m / 2 - 6 = 4 ise m kaçtır?
+            () => {
+                let A = getRandomInt(2, 5);
+                let B = getRandomInt(2, 9);
+                let C = getRandomInt(2, 10);
+                let m = A * (B + C);
+                return {
+                    text: `m / ${A} – ${B} = ${C} ise m kaçtır?`,
+                    ans: m,
+                    ansStr: `${m}`
+                };
+            },
+            // 7. 4r + 7 = 2(r+9) ise r kaçtır?
+            () => {
+                let r = getRandomInt(-8, 10, [0]);
+                let A = getRandomInt(3, 7);
+                let C = getRandomInt(1, A - 1);
+                let D = getRandomInt(2, 9);
+                let B = C * (r + D) - A * r;
+                let bSign = B >= 0 ? `+ ${B}` : `– ${Math.abs(B)}`;
+                let cStr = C === 1 ? '' : `${C}`;
+                return {
+                    text: `${A}r ${bSign} = ${cStr}(r + ${D}) ise r kaçtır?`,
+                    ans: r,
+                    ansStr: `${r}`
+                };
+            },
+            // 8. 9 - 2k = 3(k-1) ise k kaçtır?
+            () => {
+                let k = getRandomInt(-6, 8, [0]);
+                let B = getRandomInt(2, 5);
+                let C = getRandomInt(2, 5);
+                let D = getRandomInt(1, 6);
+                let A = (B + C) * k - C * D;
+                return {
+                    text: `${A} – ${B}k = ${C}(k – ${D}) ise k kaçtır?`,
+                    ans: k,
+                    ansStr: `${k}`
+                };
+            },
+            // 9. (t-4) / 3 = 2 ise t kaçtır?
+            () => {
+                let A = getRandomInt(2, 10);
+                let B = getRandomInt(2, 5);
+                let C = getRandomInt(2, 8);
+                let t = B * C + A;
+                return {
+                    text: `(t – ${A}) / ${B} = ${C} ise t kaçtır?`,
+                    ans: t,
+                    ansStr: `${t}`
+                };
+            },
+            // 10. -2(2b+3) = 10 - 3b ise b kaçtır?
+            () => {
+                let b = getRandomInt(-6, 8, [0]);
+                let A = getRandomInt(2, 4);
+                let C = getRandomInt(1, 3);
+                let D = getRandomInt(1, 5);
+                let F = getRandomInt(1, 5);
+                let E = -A * (C * b + D) + F * b;
+                let cStr = C === 1 ? 'b' : `${C}b`;
+                let fStr = F === 1 ? 'b' : `${F}b`;
+                return {
+                    text: `–${A}(${cStr} + ${D}) = ${E} – ${fStr} ise b kaçtır?`,
+                    ans: b,
+                    ansStr: `${b}`
+                };
+            }
+        ];
+
+        return templates.map(fn => fn());
+    }
+
+    function shuffleArray(array) {
+        let arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function formatTime(secs) {
+        const m = Math.floor(secs / 60).toString().padStart(2, '0');
+        const s = (secs % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    function parseInputToFloat(raw) {
+        let clean = raw.trim().replace(/\s+/g, '');
+        return parseFloat(clean);
+    }
+
+    function startTest() {
+        const generated = generateQuestions();
+        questions = shuffleArray(generated);
+        
+        currentIndex = 0;
+        userAnswers = [];
+        secondsPassed = 0;
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+
+        updateTimerDisplay();
+        showQuestion();
+
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            secondsPassed++;
+            updateTimerDisplay();
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const remaining = TIME_LIMIT - secondsPassed;
+        if (remaining >= 0) {
+            document.getElementById('timer').textContent = formatTime(remaining);
+            document.getElementById('timer').style.color = remaining <= 20 ? '#e11d48' : '#334155';
+        } else {
+            const extra = secondsPassed - TIME_LIMIT;
+            document.getElementById('timer').textContent = `+${formatTime(extra)}`;
+            document.getElementById('timer').style.color = '#e11d48';
+        }
+    }
+
+    function showQuestion() {
+        const q = questions[currentIndex];
+        document.getElementById('current-q').textContent = currentIndex + 1;
+        document.getElementById('question-text').textContent = q.text;
+
+        const input = document.getElementById('answer-input');
+        input.value = '';
+        input.focus();
+    }
+
+    function handleAnswer(e) {
+        e.preventDefault();
+        const input = document.getElementById('answer-input');
+        const rawUser = input.value.trim();
+
+        if (!rawUser) return;
+
+        const currentQ = questions[currentIndex];
+        const userFloat = parseInputToFloat(rawUser);
+        
+        const isCorrect = !isNaN(userFloat) && Math.abs(userFloat - currentQ.ans) < 0.01;
+
+        userAnswers.push({
+            q: currentQ,
+            user: rawUser,
+            isCorrect: isCorrect
+        });
+
+        currentIndex++;
+
+        if (currentIndex < questions.length) {
+            showQuestion();
+        } else {
+            finishTest();
+        }
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+
+        document.getElementById('final-time').textContent = formatTime(secondsPassed);
+        
+        const statusEl = document.getElementById('time-status');
+        if (secondsPassed <= TIME_LIMIT) {
+            statusEl.textContent = "Sürede Yetişti! 🎯";
+            statusEl.style.color = "#16a34a";
+        } else {
+            statusEl.textContent = "Süre Aşıldı ⏰";
+            statusEl.style.color = "#dc2626";
+        }
+
+        let correct = 0;
+        let wrong = 0;
+        const detailsContainer = document.getElementById('details-list');
+        detailsContainer.innerHTML = '';
+
+        userAnswers.forEach((item, idx) => {
+            if (item.isCorrect) correct++;
+            else wrong++;
+
+            const q = item.q;
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `
+                <div style="max-width: 70%;">
+                    <strong>${idx + 1}. Soru:</strong> ${q.text}<br>
+                    <small style="color: #64748b;">Sizin Cevabınız: ${item.user} | Doğru Cevap: ${q.ansStr}</small>
+                </div>
+                <span class="badge ${item.isCorrect ? 'correct' : 'incorrect'}">
+                    ${item.isCorrect ? 'Doğru' : 'Yanlış'}
+                </span>
+            `;
+            detailsContainer.appendChild(div);
+        });
+
+        document.getElementById('correct-count').textContent = correct;
+        document.getElementById('wrong-count').textContent = wrong;
+    }
+
+    function resetTest() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>

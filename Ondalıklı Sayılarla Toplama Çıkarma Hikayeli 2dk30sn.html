@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ondalıklı Sayılar Hikayeli Test</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 550px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        p.subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .timer {
+            color: #e74c3c;
+            font-size: 18px;
+        }
+
+        .question-box {
+            font-size: 18px;
+            font-weight: 500;
+            color: #2c3e50;
+            margin: 25px 0;
+            min-height: 100px;
+            text-align: left;
+            line-height: 1.5;
+            background: #f4f6f9;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #2a5298;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #2a5298;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        button {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        button:hover {
+            background: #1e3c72;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .results {
+            text-align: left;
+        }
+
+        .results h2 {
+            text-align: center;
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+
+        .result-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-details {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            max-width: 70%;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .badge.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .scroll-area {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <!-- Başlangıç Ekranı -->
+    <div id="start-screen">
+        <h1>Ondalık Problemleri Testi</h1>
+        <p class="subtitle">
+            Görseldeki 10 adet hikayeli ondalıklı sayı problemini çözün.<br><br>
+            Cevaplarda virgül (,) veya nokta (.) kullanabilirsiniz.<br><br>
+            <strong>Hedef Süre: 2 dakika 30 saniye (150sn)</strong>
+        </p>
+        <button onclick="startTest()">Testi Başlat</button>
+    </div>
+
+    <!-- Test Ekranı -->
+    <div id="quiz-screen" class="hidden">
+        <div class="stats-bar">
+            <span>Soru: <span id="current-q">1</span>/10</span>
+            <span class="timer" id="timer">02:30</span>
+        </div>
+
+        <div class="question-box" id="question-text">
+            Yükleniyor...
+        </div>
+
+        <form id="quiz-form" onsubmit="handleAnswer(event)">
+            <div class="input-group">
+                <input type="text" id="answer-input" placeholder="Cevabınız (Örn: 18,3)" required autofocus autocomplete="off">
+                <button type="submit">İleri</button>
+            </div>
+            <div class="input-hint">Ondalık ayırıcı olarak virgül (,) veya nokta (.) kullanabilirsiniz.</div>
+        </form>
+    </div>
+
+    <!-- Sonuç Ekranı -->
+    <div id="result-screen" class="hidden">
+        <div class="results">
+            <h2>Test Tamamlandı!</h2>
+            
+            <div class="result-summary">
+                <div class="result-item">
+                    <span>Geçen Süre:</span>
+                    <strong id="final-time">00:00</strong>
+                </div>
+                <div class="result-item">
+                    <span>Süre Durumu:</span>
+                    <strong id="time-status">-</strong>
+                </div>
+                <div class="result-item">
+                    <span>Doğru Sayısı:</span>
+                    <strong id="correct-count" style="color: #27ae60;">0</strong>
+                </div>
+                <div class="result-item">
+                    <span>Yanlış Sayısı:</span>
+                    <strong id="wrong-count" style="color: #c0392b;">0</strong>
+                </div>
+            </div>
+
+            <div class="scroll-area" id="details-list">
+                <!-- Detaylar -->
+            </div>
+
+            <button onclick="resetTest()" style="width: 100%;">Yeni Sorularla Tekrar Dene</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let questions = [];
+    let currentIndex = 0;
+    let userAnswers = [];
+    let timerInterval = null;
+    let secondsPassed = 0;
+    const TIME_LIMIT = 150; // 2 dakika 30 saniye = 150 saniye
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function formatTurkishDecimal(val, maxDecimals = 2) {
+        let rounded = Number(Math.round(val + 'e' + maxDecimals) + 'e-' + maxDecimals);
+        return rounded.toString().replace('.', ',');
+    }
+
+    function generateQuestions() {
+        const templates = [
+            // 1. Zeynep para kalma problemi (Çıkarma)
+            () => {
+                let total = getRandomInt(20, 50) + getRandomInt(10, 99)/100;
+                let spent = getRandomInt(5, 15) + getRandomInt(1, 9)/10;
+                total = Math.round(total * 100) / 100;
+                spent = Math.round(spent * 10) / 10;
+                let ans = total - spent;
+                return {
+                    text: `Zeynep'in ${formatTurkishDecimal(total)} ₺'si vardır. ${formatTurkishDecimal(spent)} ₺'lik ip alır. Zeynep'in kaç ₺'si kalır?`,
+                    ansStr: formatTurkishDecimal(ans)
+                };
+            },
+            // 2. Akaryakıt istasyonu benzin alma (Toplama)
+            () => {
+                let b1 = getRandomInt(4, 12) + getRandomInt(1, 9)/10;
+                let b2 = getRandomInt(3, 10) + getRandomInt(1, 9)/10;
+                b1 = Math.round(b1 * 10) / 10;
+                b2 = Math.round(b2 * 10) / 10;
+                let ans = b1 + b2;
+                return {
+                    text: `Bir akaryakıt istasyonunda bir kişi önce ${formatTurkishDecimal(b1)} ₺'lik sonra ${formatTurkishDecimal(b2)} ₺'lik benzin alıyor. Toplam kaç ₺ öder?`,
+                    ansStr: formatTurkishDecimal(ans)
+                };
+            },
+            // 3. Çiftlik yem kalma problemi (Çıkarma)
+            () => {
+                let total = getRandomInt(30, 70) + getRandomInt(1, 9)/10;
+                let used = getRandomInt(5, 20) + getRandomInt(1, 9)/10;
+                total = Math.round(total * 10) / 10;
+                used = Math.round(used * 10) / 10;
+                let ans = total - used;
+                return {
+                    text: `Bir çiftlikte ${formatTurkishDecimal(total)} kg yem vardır. Hayvanlara ${formatTurkishDecimal(used)} kg yem veriliyor. Geriye kaç kg yem kalır?`,
+                    ansStr: formatTurkishDecimal(ans)
+                };
+            },
+            // 4. Bidon zeytinyağı kalma (Çıkarma)
+            () => {
+                let total = getRandomInt(8, 20) + getRandomInt(1, 9)/10;
+                let used = getRandomInt(1, 9) / 10;
+                total = Math.round(total * 10) / 10;
+                let ans = total - used;
+                return {
+                    text: `Bir bidonda ${formatTurkishDecimal(total)} litre zeytinyağı vardır. ${formatTurkishDecimal(used)} litre kullanılıyor. Bidonda kaç litre yağ kalır?`,
+                    ansStr: formatTurkishDecimal(ans)
+                };
+            },
+            // 5. Kamyon kum ekleme (Toplama)
+            () => {
+                let k1 = getRandomInt(2, 8) + getRandomInt(10, 99)/100;
+                let k2 = getRandomInt(1, 5) + getRandomInt(1, 9)/10;
+                k1 = Math.round(k1 * 100) / 100;
+                k2 = Math.round(k2 * 10) / 10;
+                let ans = k1 + k2;
+                return {
+                    text: `Bir kamyonda ${formatTurkishDecimal(k1)} ton kum vardır. Yanına ${formatTurkishDecimal(k2)} ton daha kum eklenir. Kamyonda toplam kaç ton kum olur?`,
+                    ansStr: formatTurkishDecimal(ans)
+                };
+            },
+            // 6. Otobüs kalan yol (Çıkarma - Tam sayı ve ondalık)
+            () => {
+                let total = getRandomInt(60, 150);
+                let gone = getRandomInt(2, 15) + getRandomInt(1, 9)/10;
+                gone = Math.round(gone * 10) / 10;
+                let ans = total - gone;
+                return {
+                    text: `Bir otobüs ${total} km yolun ${formatTurkishDecimal(gone)} km'sini gitmiştir. Geriye kaç km yol kalmıştır?`,
+                    ansStr: formatTurkishDecimal(ans)
+                };
+            },
+            // 7. Market peynir alma para kalma (Çıkarma)
+            () => {
+                let total = getRandomInt(20, 50) + getRandomInt(1, 9)/10;
+                let cost = getRandomInt(10, Math.floor(total) - 2) + getRandomInt(1, 9)/10;
+                total = Math.round(total * 10) / 10;
+                cost = Math.round(cost * 10) / 10;
+                let ans = total - cost;
+                return {
+                    text: `Bir markette peynirin kilosu ${formatTurkishDecimal(cost)} ₺'dir. ${formatTurkishDecimal(total)} ₺'si olan bir kişinin 1 kg peynir aldıktan sonra kaç ₺'si kalır?`,
+                    ansStr: formatTurkishDecimal(ans)
+                };
+            },
+            // 8. Rüzgar türbini megavat ekleme (Toplama)
+            () => {
+                let e1 = getRandomInt(1, 9) + getRandomInt(1, 9)/10;
+                let e2 = getRandomInt(2, 9) + getRandomInt(1, 9)/10;
+                e1 = Math.round(e1 * 10) / 10;
+                e2 = Math.round(e2 * 10) / 10;
+                let ans = e1 + e2;
+                return {
+                    text: `Bir rüzgar türbini ${formatTurkishDecimal(e1)} megavat enerji üretmiştir. Buna ${formatTurkishDecimal(e2)} megavat daha eklenirse toplam kaç megavat olur?`,
+                    ansStr: formatTurkishDecimal(ans)
+                };
+            },
+            // 9. Market yoğurt satışı kalma (Çıkarma)
+            () => {
+                let total = getRandomInt(50, 120) + getRandomInt(1, 9)/10;
+                let sold = getRandomInt(2, 15) + getRandomInt(1, 9)/10;
+                total = Math.round(total * 10) / 10;
+                sold = Math.round(sold * 10) / 10;
+                let ans = total - sold;
+                return {
+                    text: `Bir market stoğunda ${formatTurkishDecimal(total)} kg yoğurt bulunmaktadır. ${formatTurkishDecimal(sold)} kg satılmıştır. Kaç kg yoğurt kalmıştır?`,
+                    ansStr: formatTurkishDecimal(ans)
+                };
+            },
+            // 10. İnşaat çivi kullanımı kalma (Çıkarma)
+            () => {
+                let total = getRandomInt(5, 15) + getRandomInt(1, 9)/10;
+                let used = getRandomInt(10, 99) / 100;
+                total = Math.round(total * 10) / 10;
+                let ans = total - used;
+                return {
+                    text: `Bir inşaatta ${formatTurkishDecimal(total)} kg çivi vardır. ${formatTurkishDecimal(used)} kg çivi kullanılmıştır. Geriye kaç kg çivi kalır?`,
+                    ansStr: formatTurkishDecimal(ans)
+                };
+            }
+        ];
+
+        return templates.map(generator => generator());
+    }
+
+    function shuffleArray(array) {
+        let arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function formatTime(secs) {
+        const m = Math.floor(secs / 60).toString().padStart(2, '0');
+        const s = (secs % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    function normalizeInput(str) {
+        return str.trim().replace('.', ',').replace(/\s+/g, '');
+    }
+
+    function startTest() {
+        const generated = generateQuestions();
+        questions = shuffleArray(generated);
+        
+        currentIndex = 0;
+        userAnswers = [];
+        secondsPassed = 0;
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+
+        updateTimerDisplay();
+        showQuestion();
+
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            secondsPassed++;
+            updateTimerDisplay();
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const remaining = TIME_LIMIT - secondsPassed;
+        if (remaining >= 0) {
+            document.getElementById('timer').textContent = formatTime(remaining);
+            document.getElementById('timer').style.color = remaining <= 30 ? '#e74c3c' : '#2c3e50';
+        } else {
+            const extra = secondsPassed - TIME_LIMIT;
+            document.getElementById('timer').textContent = `+${formatTime(extra)}`;
+            document.getElementById('timer').style.color = '#e74c3c';
+        }
+    }
+
+    function showQuestion() {
+        const q = questions[currentIndex];
+        document.getElementById('current-q').textContent = currentIndex + 1;
+        document.getElementById('question-text').textContent = q.text;
+
+        const input = document.getElementById('answer-input');
+        input.value = '';
+        input.focus();
+    }
+
+    function handleAnswer(e) {
+        e.preventDefault();
+        const input = document.getElementById('answer-input');
+        const rawUser = input.value;
+        const normalizedUser = normalizeInput(rawUser);
+
+        if (!normalizedUser) return;
+
+        const currentQ = questions[currentIndex];
+        const isCorrect = (normalizedUser === normalizeInput(currentQ.ansStr));
+
+        userAnswers.push({
+            question: currentQ.text,
+            correct: currentQ.ansStr,
+            user: rawUser.trim(),
+            isCorrect: isCorrect
+        });
+
+        currentIndex++;
+
+        if (currentIndex < questions.length) {
+            showQuestion();
+        } else {
+            finishTest();
+        }
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+
+        document.getElementById('final-time').textContent = formatTime(secondsPassed);
+        
+        const statusEl = document.getElementById('time-status');
+        if (secondsPassed <= TIME_LIMIT) {
+            statusEl.textContent = "Sürede Yetişti! 🎯";
+            statusEl.style.color = "#27ae60";
+        } else {
+            statusEl.textContent = "Süre Aşıldı ⏰";
+            statusEl.style.color = "#c0392b";
+        }
+
+        let correct = 0;
+        let wrong = 0;
+        const detailsContainer = document.getElementById('details-list');
+        detailsContainer.innerHTML = '';
+
+        userAnswers.forEach((item, idx) => {
+            if (item.isCorrect) correct++;
+            else wrong++;
+
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `
+                <div class="result-details">
+                    <strong>${idx + 1}. Soru</strong>
+                    <span>Cevabınız: ${item.user}</span>
+                </div>
+                <span class="badge ${item.isCorrect ? 'correct' : 'incorrect'}">
+                    ${item.isCorrect ? 'Doğru' : 'Yanlış (Doğru: ' + item.correct + ')'}
+                </span>
+            `;
+            detailsContainer.appendChild(div);
+        });
+
+        document.getElementById('correct-count').textContent = correct;
+        document.getElementById('wrong-count').textContent = wrong;
+    }
+
+    function resetTest() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>

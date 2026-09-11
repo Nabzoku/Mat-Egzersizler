@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Denklem Çözme Hikayeli Testi 1. Part</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 580px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        p.subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .timer {
+            color: #e74c3c;
+            font-size: 18px;
+        }
+
+        .question-box {
+            font-size: 18px;
+            font-weight: 500;
+            color: #1e293b;
+            margin: 20px 0;
+            min-height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fdfdfd;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px dashed #cbd5e1;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #2a5298;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        button {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        button:hover {
+            background: #1e3c72;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .results {
+            text-align: left;
+        }
+
+        .results h2 {
+            text-align: center;
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+
+        .result-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .badge.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .scroll-area {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <!-- Başlangıç Ekranı -->
+    <div id="start-screen">
+        <h1>Denklem Çözme Hikayeli Testi 1. Part</h1>
+        <p class="subtitle">
+            Görseldeki 10 adet denklem problemini çözün.<br><br>
+            Ondalıklı cevaplarda virgül (,) veya nokta (.) kullanabilirsiniz.<br><br>
+            <strong>Hedef Süre: 2 dakika 45 saniye (165sn)</strong>
+        </p>
+        <button onclick="startTest()">Testi Başlat</button>
+    </div>
+
+    <!-- Test Ekranı -->
+    <div id="quiz-screen" class="hidden">
+        <div class="stats-bar">
+            <span>Soru: <span id="current-q">1</span>/10</span>
+            <span class="timer" id="timer">02:45</span>
+        </div>
+
+        <div class="question-box" id="question-text">
+            Yükleniyor...
+        </div>
+
+        <form id="quiz-form" onsubmit="handleAnswer(event)">
+            <div class="input-group">
+                <input type="text" id="answer-input" placeholder="Cevabınız" required autofocus autocomplete="off">
+                <button type="submit">İleri</button>
+            </div>
+            <div class="input-hint">Sadece sayısal değeri yazmanız yeterlidir.</div>
+        </form>
+    </div>
+
+    <!-- Sonuç Ekranı -->
+    <div id="result-screen" class="hidden">
+        <div class="results">
+            <h2>Test Tamamlandı!</h2>
+            
+            <div class="result-summary">
+                <div class="result-item">
+                    <span>Geçen Süre:</span>
+                    <strong id="final-time">00:00</strong>
+                </div>
+                <div class="result-item">
+                    <span>Süre Durumu:</span>
+                    <strong id="time-status">-</strong>
+                </div>
+                <div class="result-item">
+                    <span>Doğru Sayısı:</span>
+                    <strong id="correct-count" style="color: #27ae60;">0</strong>
+                </div>
+                <div class="result-item">
+                    <span>Yanlış Sayısı:</span>
+                    <strong id="wrong-count" style="color: #c0392b;">0</strong>
+                </div>
+            </div>
+
+            <div class="scroll-area" id="details-list">
+                <!-- Detaylar -->
+            </div>
+
+            <button onclick="resetTest()" style="width: 100%;">Yeni Sorularla Tekrar Dene</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let questions = [];
+    let currentIndex = 0;
+    let userAnswers = [];
+    let timerInterval = null;
+    let secondsPassed = 0;
+    const TIME_LIMIT = 165; // 2 dakika 45 saniye = 165 saniye
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function formatNumberTr(val, decimals = 2) {
+        let rounded = Number(Math.round(val + 'e' + decimals) + 'e-' + decimals);
+        return rounded.toString().replace('.', ',');
+    }
+
+    function generateQuestions() {
+        const templates = [
+            // 1. Koli paylaşımı (Depo koli problemi)
+            () => {
+                let a = getRandomInt(15, 35) * 10 + getRandomInt(1, 9);
+                let b = getRandomInt(20, 40) * 10 + getRandomInt(1, 9);
+                let c = getRandomInt(25, 45) * 10;
+                let total = a + b + c;
+                return {
+                    text: `Bir depoda toplam ${total} parça bulunmaktadır. Bunların ${a}'i A kolisine, ${b}'i B kolisine ayrılıyor. Geri kalanlar ise C kolisine konuluyor. C kolisine kaç parça konulmuştur?`,
+                    ans: c,
+                    ansStr: `${c}`
+                };
+            },
+            // 2. Koşucu tur mesafesi (Ondalıklı mesafe)
+            () => {
+                let lapLength = (getRandomInt(12, 35) / 2); // Örn: 1.5, 2.0, 2.5, 3.0 km
+                let laps = [4, 5, 6, 8][getRandomInt(0, 3)];
+                let totalDist = lapLength * laps;
+                return {
+                    text: `Bir koşucu, aynı uzunluktaki parkuru ${laps} tur koşmuştur. Toplam koştuğu mesafe ${formatNumberTr(totalDist)} km'dir. Bir turun uzunluğu kaç kilometredir?`,
+                    ans: lapLength,
+                    ansStr: `${formatNumberTr(lapLength)} km`
+                };
+            },
+            // 3. Kumbaradan para çekme
+            () => {
+                let perWithdraw = getRandomInt(4, 12) * 10;
+                let times = [4, 5, 6][getRandomInt(0, 2)];
+                let remaining = getRandomInt(30, 80) * 10;
+                let initial = remaining + (perWithdraw * times);
+                return {
+                    text: `Bir kumbarada ${initial} ₺ vardır. Kumbaradan eşit miktarda ${times} kez para alınmıştır. Kumbarada ${remaining} ₺ kaldığına göre her seferinde kaç ₺ alınmıştır?`,
+                    ans: perWithdraw,
+                    ansStr: `${perWithdraw} ₺`
+                };
+            },
+            // 4. Baskılı tişört alma
+            () => {
+                let shirtPrice = getRandomInt(18, 45) * 10;
+                let printCost = [50, 80, 100, 120, 150][getRandomInt(0, 4)];
+                let totalCost = shirtPrice + printCost;
+                return {
+                    text: `Bir spor mağazasında bir tişörtün fiyatına, baskı yapılması için ${printCost} ₺ ek ücret eklenmektedir. Ahmet baskılı bir tişört almış ve toplam ${totalCost} ₺ ödemiştir. Bir tişörtün baskı yapılmadan önceki fiyatı kaç ₺'dir?`,
+                    ans: shirtPrice,
+                    ansStr: `${shirtPrice} ₺`
+                };
+            },
+            // 5. Su deposundan su kullanımı
+            () => {
+                let hourly = getRandomInt(8, 20);
+                let hours = [4, 5, 6, 8][getRandomInt(0, 3)];
+                let remaining = getRandomInt(6, 18) * 10;
+                let initial = remaining + (hourly * hours);
+                return {
+                    text: `Bir su deposunda başlangıçta ${initial} litre su vardır. Depodan her saat aynı miktarda su kullanılmaktadır. ${hours} saat sonunda depoda ${remaining} litre su kalmıştır. Depodan saatte kaç litre su kullanılmıştır?`,
+                    ans: hourly,
+                    ansStr: `${hourly} litre`
+                };
+            },
+            // 6. Kafede kahve ve servis ücreti
+            () => {
+                let people = [5, 6, 8, 10][getRandomInt(0, 3)];
+                let serviceFee = [4, 5, 6, 8, 10][getRandomInt(0, 4)];
+                let coffeePrice = getRandomInt(35, 75);
+                let totalBill = people * (coffeePrice + serviceFee);
+                return {
+                    text: `Kafeye giden ${people} kişilik bir arkadaş grubunda herkes bir adet kahve söylemiştir. Kafede her kahvenin fiyatına ${serviceFee} ₺ servis ücreti eklenmekte olup toplam hesap ${totalBill} ₺ gelmiştir. Bir kahvenin servis ücreti hariç fiyatı kaç ₺'dir?`,
+                    ans: coffeePrice,
+                    ansStr: `${coffeePrice} ₺`
+                };
+            },
+            // 7. Oyunda puan harcama (Kesirli kalan)
+            () => {
+                let denom = [5, 7, 8, 9][getRandomInt(0, 3)];
+                let spentNum = getRandomInt(2, denom - 2);
+                let remainNum = denom - spentNum;
+                let unitValue = getRandomInt(4, 15) * 10;
+                let remainPoints = remainNum * unitValue;
+                let totalPoints = denom * unitValue;
+                return {
+                    text: `Efe, bir oyunda topladığı puanların ${spentNum}/${denom}'sini harcamıştır. Harcamadığı puan miktarı ${remainPoints} olduğuna göre Efe'nin topladığı toplam puan kaçtır?`,
+                    ans: totalPoints,
+                    ansStr: `${totalPoints}`
+                };
+            },
+            // 8. İndirimli çikolata alma
+            () => {
+                let discount = [4, 5, 6, 8, 10][getRandomInt(0, 4)];
+                let count = [5, 6, 8, 10][getRandomInt(0, 3)];
+                let originalPrice = getRandomInt(25, 55);
+                let totalPaid = count * (originalPrice - discount);
+                return {
+                    text: `Bir markette çikolatalara ${discount} ₺ indirim uygulanmıştır. Ali aynı çikolatadan ${count} tane almış ve toplamda ${totalPaid} ₺ ödemiştir. İndirim uygulanmadan önce bir çikolatanın fiyatı kaç ₺'dir?`,
+                    ans: originalPrice,
+                    ansStr: `${originalPrice} ₺`
+                };
+            },
+            // 9. Yardım kampanyası paketleri
+            () => {
+                let gida = getRandomInt(25, 50) * 10;
+                let kirtasiye = getRandomInt(20, 45) * 10 + 5;
+                let temizlik = getRandomInt(30, 60) * 10;
+                let total = gida + kirtasiye + temizlik;
+                return {
+                    text: `Bir yardım kampanyasında toplam ${total} paket hazırlanmıştır. Bunların ${gida}'u gıda paketi, ${kirtasiye}'i kırtasiye paketidir. Geri kalanlar temizlik paketidir. Kaç adet temizlik paketi bulunmaktadır?`,
+                    ans: temizlik,
+                    ansStr: `${temizlik}`
+                };
+            },
+            // 10. Kırmızı ve mavi bilyeler (Kırmızı maviden X fazla)
+            () => {
+                let diff = getRandomInt(3, 8) * 2; // Çift sayı fark
+                let blue = getRandomInt(10, 30);
+                let red = blue + diff;
+                let total = red + blue;
+                return {
+                    text: `Bir kutuda toplam ${total} adet bilye vardır. Bu bilyelerin bir kısmı kırmızı geriye kalanı mavidir. Kutudaki kırmızı bilyelerin sayısı, mavi bilyelerin sayısından ${diff} fazladır. Buna göre kutuda kaç tane kırmızı bilye vardır?`,
+                    ans: red,
+                    ansStr: `${red}`
+                };
+            }
+        ];
+
+        return templates.map(fn => fn());
+    }
+
+    function shuffleArray(array) {
+        let arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function formatTime(secs) {
+        const m = Math.floor(secs / 60).toString().padStart(2, '0');
+        const s = (secs % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    function parseInputToFloat(raw) {
+        let clean = raw.trim().replace(',', '.').replace(/\s+/g, '');
+        return parseFloat(clean);
+    }
+
+    function startTest() {
+        const generated = generateQuestions();
+        questions = shuffleArray(generated);
+        
+        currentIndex = 0;
+        userAnswers = [];
+        secondsPassed = 0;
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+
+        updateTimerDisplay();
+        showQuestion();
+
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            secondsPassed++;
+            updateTimerDisplay();
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const remaining = TIME_LIMIT - secondsPassed;
+        if (remaining >= 0) {
+            document.getElementById('timer').textContent = formatTime(remaining);
+            document.getElementById('timer').style.color = remaining <= 30 ? '#e74c3c' : '#2c3e50';
+        } else {
+            const extra = secondsPassed - TIME_LIMIT;
+            document.getElementById('timer').textContent = `+${formatTime(extra)}`;
+            document.getElementById('timer').style.color = '#e74c3c';
+        }
+    }
+
+    function showQuestion() {
+        const q = questions[currentIndex];
+        document.getElementById('current-q').textContent = currentIndex + 1;
+        document.getElementById('question-text').textContent = q.text;
+
+        const input = document.getElementById('answer-input');
+        input.value = '';
+        input.focus();
+    }
+
+    function handleAnswer(e) {
+        e.preventDefault();
+        const input = document.getElementById('answer-input');
+        const rawUser = input.value.trim();
+
+        if (!rawUser) return;
+
+        const currentQ = questions[currentIndex];
+        const userFloat = parseInputToFloat(rawUser);
+        
+        const isCorrect = !isNaN(userFloat) && Math.abs(userFloat - currentQ.ans) < 0.01;
+
+        userAnswers.push({
+            q: currentQ,
+            user: rawUser,
+            isCorrect: isCorrect
+        });
+
+        currentIndex++;
+
+        if (currentIndex < questions.length) {
+            showQuestion();
+        } else {
+            finishTest();
+        }
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+
+        document.getElementById('final-time').textContent = formatTime(secondsPassed);
+        
+        const statusEl = document.getElementById('time-status');
+        if (secondsPassed <= TIME_LIMIT) {
+            statusEl.textContent = "Sürede Yetişti! 🎯";
+            statusEl.style.color = "#27ae60";
+        } else {
+            statusEl.textContent = "Süre Aşıldı ⏰";
+            statusEl.style.color = "#c0392b";
+        }
+
+        let correct = 0;
+        let wrong = 0;
+        const detailsContainer = document.getElementById('details-list');
+        detailsContainer.innerHTML = '';
+
+        userAnswers.forEach((item, idx) => {
+            if (item.isCorrect) correct++;
+            else wrong++;
+
+            const q = item.q;
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `
+                <div style="max-width: 70%;">
+                    <strong>${idx + 1}. Soru:</strong> ${item.user}<br>
+                    <small style="color: #666;">Doğru Cevap: ${q.ansStr}</small>
+                </div>
+                <span class="badge ${item.isCorrect ? 'correct' : 'incorrect'}">
+                    ${item.isCorrect ? 'Doğru' : 'Yanlış'}
+                </span>
+            `;
+            detailsContainer.appendChild(div);
+        });
+
+        document.getElementById('correct-count').textContent = correct;
+        document.getElementById('wrong-count').textContent = wrong;
+    }
+
+    function resetTest() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>

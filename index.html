@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matematik Egzersiz Portalı</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        /* Arama ve Filtreleme */
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 35px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text-main);
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent);
+        }
+
+        .category-section {
+            margin-bottom: 40px;
+        }
+
+        .category-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            text-decoration: none;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent);
+            box-shadow: 0 8px 20px rgba(56, 189, 248, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .badge {
+            background: #0284c7;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .badge.story {
+            background: #7c3aed;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .time-info {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #f59e0b;
+            font-weight: 500;
+        }
+
+        .action-text {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .no-results {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 16px;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 600px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Matematik Egzersiz Portalı</h1>
+        <p class="subtitle">Çözmek istediğiniz modülü seçip hemen başlayabilirsiniz.</p>
+    </header>
+
+    <div class="controls">
+        <div class="search-box">
+            <input type="text" id="searchInput" onkeyup="filterCards()" placeholder="Modül veya konu ara...">
+        </div>
+    </div>
+
+    <div id="portal-content">
+        <!-- Temel Dört İşlem -->
+        <div class="category-section">
+            <div class="category-title">📐 Temel Dört İşlem</div>
+            <div class="grid">
+                <a href="Toplama Çıkarma İşlemler 2dk55sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Toplama Çıkarma İşlemler</div>
+                        <span class="badge">İşlem</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 2dk 55sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+
+                <a href="Toplama Çıkarma Hikayeli 2dk40sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Toplama Çıkarma Hikayeli</div>
+                        <span class="badge story">Hikayeli</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 2dk 40sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+
+                <a href="Çarpma Bölme İşlemler 2dk25sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Çarpma Bölme İşlemler</div>
+                        <span class="badge">İşlem</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 2dk 25sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+
+                <a href="Çarpma Bölme Hikayeli 1dk35sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Çarpma Bölme Hikayeli</div>
+                        <span class="badge story">Hikayeli</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 1dk 35sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Kesirler -->
+        <div class="category-section">
+            <div class="category-title">🍕 Kesirler</div>
+            <div class="grid">
+                <a href="Kesirlerle Toplama Çıkarma İşlemler 4dk.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Kesirlerle Toplama Çıkarma İşlemler</div>
+                        <span class="badge">İşlem</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 4dk 00sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+
+                <a href="Kesirlerle Toplama Çıkarma Hikayeli 1dk45sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Kesirlerle Toplama Çıkarma Hikayeli</div>
+                        <span class="badge story">Hikayeli</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 1dk 45sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+
+                <a href="Kesirlerle Çarpma Bölme İşlemler 3dk15sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Kesirlerle Çarpma Bölme İşlemler</div>
+                        <span class="badge">İşlem</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 3dk 15sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+
+                <a href="Kesirlerle Çarpma Bölme Hikayeli 4dk10sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Kesirlerle Çarpma Bölme Hikayeli</div>
+                        <span class="badge story">Hikayeli</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 4dk 10sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Ondalıklı Sayılar -->
+        <div class="category-section">
+            <div class="category-title">🔢 Ondalıklı Sayılar</div>
+            <div class="grid">
+                <a href="Ondalıklı Sayılarla Toplama Çıkarma İşlemler 5dk45sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Ondalıklı Sayılarla Toplama Çıkarma İşlemler</div>
+                        <span class="badge">İşlem</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 5dk 45sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+
+                <a href="Ondalıklı Sayılarla Toplama Çıkarma Hikayeli 2dk30sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Ondalıklı Sayılarla Toplama Çıkarma Hikayeli</div>
+                        <span class="badge story">Hikayeli</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 2dk 30sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Yüzde Egzersizleri -->
+        <div class="category-section">
+            <div class="category-title">📊 Yüzde Egzersizleri</div>
+            <div class="grid">
+                <a href="Yüzde Egzersizleri Yüzdeden Kesire İşlemler 3dk15sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Yüzdeden Kesire İşlemler</div>
+                        <span class="badge">Dönüşüm</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 3dk 15sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+
+                <a href="Yüzde Egzersizleri Yazılı Yüzde İşlemleri 2dk40sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Yazılı Yüzde İşlemleri</div>
+                        <span class="badge">İşlem</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 2dk 40sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+
+                <a href="Yüzde Egzersizleri Kesirden Yüzdeye İşlemler 3dk20sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Kesirden Yüzdeye İşlemler</div>
+                        <span class="badge">Dönüşüm</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 3dk 20sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+
+                <a href="Yüzde Egzersizleri Yüzdeden Ondaya İşlemler 2dk40sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Yüzdeden Ondaya İşlemler</div>
+                        <span class="badge">Dönüşüm</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 2dk 40sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+
+                <a href="Yüzde Egzersizleri Hikayeli 3dk20sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Yüzde Hikayeli Problemler</div>
+                        <span class="badge story">Hikayeli</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 3dk 20sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Denklem Çözme -->
+        <div class="category-section">
+            <div class="category-title">⚙️ Denklem Çözme</div>
+            <div class="grid">
+                <a href="Denklem Çözme Hikayeli 1. Part 2dk45sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Denklem Çözme Hikayeli 1. Part</div>
+                        <span class="badge story">Hikayeli</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 2dk 45sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+
+                <a href="Denklem Çözme Hikayeli 2. Part 2dk30sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Denklem Çözme Hikayeli 2. Part</div>
+                        <span class="badge story">Hikayeli</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 2dk 30sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+
+                <a href="Denklem Çözme Yazılı İşlemler 1. Part 2dk15sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Denklem Çözme Yazılı İşlemler 1. Part</div>
+                        <span class="badge">İşlem</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 2dk 15sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+
+                <a href="Denklem Çözme Yazılı İşlemler 2. Part 1dk25sn.html" class="card">
+                    <div class="card-header">
+                        <div class="card-title">Denklem Çözme Yazılı İşlemler 2. Part</div>
+                        <span class="badge">İşlem</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="time-info">⏱ 1dk 25sn</span>
+                        <span class="action-text">Başla →</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="noResults" class="no-results" style="display: none;">
+        Aradığınız kriterlere uygun modül bulunamadı.
+    </div>
+</div>
+
+<script>
+    function filterCards() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const cards = document.querySelectorAll('.card');
+        const sections = document.querySelectorAll('.category-section');
+        let totalVisible = 0;
+
+        cards.forEach(card => {
+            const title = card.querySelector('.card-title').textContent.toLowerCase();
+            if (title.includes(input)) {
+                card.style.display = 'flex';
+                totalVisible++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Boş kalan kategorileri gizle
+        sections.forEach(section => {
+            const visibleCards = section.querySelectorAll('.card[style="display: flex;"]');
+            if (visibleCards.length === 0 && input !== '') {
+                section.style.display = 'none';
+            } else {
+                section.style.display = 'block';
+            }
+        });
+
+        const noResults = document.getElementById('noResults');
+        if (totalVisible === 0) {
+            noResults.style.display = 'block';
+        } else {
+            noResults.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>

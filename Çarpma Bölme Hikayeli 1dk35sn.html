@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Çarpma ve Bölme Problemleri Hız Testi</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 550px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        p.subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .timer {
+            color: #e74c3c;
+            font-size: 18px;
+        }
+
+        .question-box {
+            font-size: 18px;
+            font-weight: 500;
+            color: #2c3e50;
+            margin: 25px 0;
+            min-height: 90px;
+            text-align: left;
+            line-height: 1.5;
+            background: #f4f6f9;
+            padding: 18px;
+            border-radius: 10px;
+            border-left: 5px solid #2a5298;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="number"] {
+            flex: 1;
+            padding: 14px;
+            font-size: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            border-color: #2a5298;
+        }
+
+        button {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        button:hover {
+            background: #1e3c72;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .results {
+            text-align: left;
+        }
+
+        .results h2 {
+            text-align: center;
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+
+        .result-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            max-width: 70%;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .badge.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .scroll-area {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <!-- Başlangıç Ekranı -->
+    <div id="start-screen">
+        <h1>Çarpma & Bölme Problemleri Hız Testi</h1>
+        <p class="subtitle">10 adet hikayeli problemi çözün.<br>Hedef Süre: 1 dakika 35 saniye (95sn)</p>
+        <button onclick="startTest()">Testi Başlat</button>
+    </div>
+
+    <!-- Test Ekranı -->
+    <div id="quiz-screen" class="hidden">
+        <div class="stats-bar">
+            <span>Soru: <span id="current-q">1</span>/10</span>
+            <span class="timer" id="timer">01:35</span>
+        </div>
+
+        <div class="question-box" id="question-text">
+            Yükleniyor...
+        </div>
+
+        <form id="quiz-form" onsubmit="handleAnswer(event)">
+            <div class="input-group">
+                <input type="number" id="answer-input" placeholder="Cevabınız" required autofocus>
+                <button type="submit">İleri</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sonuç Ekranı -->
+    <div id="result-screen" class="hidden">
+        <div class="results">
+            <h2>Test Tamamlandı!</h2>
+            
+            <div class="result-summary">
+                <div class="result-item">
+                    <span>Geçen Süre:</span>
+                    <strong id="final-time">00:00</strong>
+                </div>
+                <div class="result-item">
+                    <span>Süre Durumu:</span>
+                    <strong id="time-status">-</strong>
+                </div>
+                <div class="result-item">
+                    <span>Doğru Sayısı:</span>
+                    <strong id="correct-count" style="color: #27ae60;">0</strong>
+                </div>
+                <div class="result-item">
+                    <span>Yanlış Sayısı:</span>
+                    <strong id="wrong-count" style="color: #c0392b;">0</strong>
+                </div>
+            </div>
+
+            <div class="scroll-area" id="details-list">
+                <!-- Detaylar buraya gelecek -->
+            </div>
+
+            <button onclick="resetTest()" style="width: 100%;">Yeni Sorularla Tekrar Dene</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let questions = [];
+    let currentIndex = 0;
+    let userAnswers = [];
+    let timerInterval = null;
+    let secondsPassed = 0;
+    const TIME_LIMIT = 95; // 1 dk 35 sn = 95 saniye
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Görseldeki 10 problemin birebir kalıplarına göre rastgele soru üreteci
+    function generateQuestions() {
+        const templates = [
+            // 1. Dağcı tırmanma sorusu kalıbı (Çarpma)
+            () => {
+                const metre = getRandomInt(150, 350);
+                const saat = getRandomInt(4, 8);
+                return {
+                    text: `Bir dağcı zirveye çıkarken her saatte ${metre} metre tırmanmaktadır. Dağcı ${saat} saat boyunca tırmandığına göre başlangıç noktasından kaç metre yüksektedir?`,
+                    ans: metre * saat
+                };
+            },
+            // 2. Telefon şarjı azalma sorusu kalıbı (Çarpma)
+            () => {
+                const yuzde = getRandomInt(4, 9);
+                const saat = getRandomInt(4, 8);
+                return {
+                    text: `Bir telefonun şarjı her saatte %${yuzde} azalmaktadır. ${saat} saat sonra toplam yüzde kaç azalma olur?`,
+                    ans: yuzde * saat
+                };
+            },
+            // 3. Yayınevi kitap basımı sorusu kalıbı (Çarpma)
+            () => {
+                const kitap = getRandomInt(200, 450);
+                const gun = getRandomInt(3, 7);
+                return {
+                    text: `Bir yayınevinde her gün ${kitap} kitap basılmaktadır. ${gun} gün sonunda toplam kaç kitap basılmış olur?`,
+                    ans: kitap * gun
+                };
+            },
+            // 4. Müze rehberi ziyaretçi sorusu kalıbı (Bölme)
+            () => {
+                const ortalama = getRandomInt(50, 90);
+                const tur = getRandomInt(12, 20);
+                const toplam = ortalama * tur;
+                return {
+                    text: `Bir müzede rehber aynı turu ${tur} kez yapmıştır. Toplamda ${toplam.toLocaleString('tr-TR')} ziyaretçiye tur anlatmıştır. Her turda ortalama kaç ziyaretçi vardır?`,
+                    ans: ortalama
+                };
+            },
+            // 5. Düğün davetiyesi dağıtımı sorusu kalıbı (Bölme)
+            () => {
+                const gunluk = getRandomInt(250, 600);
+                const gun = getRandomInt(5, 10);
+                const toplam = gunluk * gun;
+                return {
+                    text: `Bir düğün için ${toplam.toLocaleString('tr-TR')} davetiye basılmıştır. Davetiyeler ${gun} günde dağıtılacak olup her gün eşit sayıda davetiye dağıtılacaktır. Günde kaç davetiye dağıtılır?`,
+                    ans: gunluk
+                };
+            },
+            // 6. Banka kirası ödemesi sorusu kalıbı (Çarpma)
+            () => {
+                const kira = getRandomInt(1200, 2500);
+                const ay = getRandomInt(5, 10);
+                return {
+                    text: `Bir banka hesabından her ay ${kira.toLocaleString('tr-TR')} ₺ kira ödenmektedir. ${ay} ay sonunda toplam kaç ₺ kira ödenmiş olur?`,
+                    ans: kira * ay
+                };
+            },
+            // 7. Sinema seansı bilet sorusu kalıbı (Bölme)
+            () => {
+                const seansBilet = getRandomInt(150, 300);
+                const seans = getRandomInt(8, 15);
+                const toplam = seansBilet * seans;
+                return {
+                    text: `Bir sinema salonunda ${toplam.toLocaleString('tr-TR')} bilet satılmıştır. Bu biletler ${seans} seansa eşit dağıtılmıştır. Her seansta kaç bilet satılmıştır?`,
+                    ans: seansBilet
+                };
+            },
+            // 8. Sporcu koşusu sorusu kalıbı (Çarpma)
+            () => {
+                const km = getRandomInt(3, 8);
+                const gun = getRandomInt(10, 20);
+                return {
+                    text: `Bir sporcu her gün ${km} km koşmaktadır. ${gun} gün sonunda toplam kaç km koşmuş olur?`,
+                    ans: km * gun
+                };
+            },
+            // 9. Marangoz tahta kesimi sorusu kalıbı (Bölme)
+            () => {
+                const parcaUzunluk = getRandomInt(60, 120);
+                const parcaSayisi = getRandomInt(8, 15);
+                const toplam = parcaUzunluk * parcaSayisi;
+                return {
+                    text: `Bir marangoz ${toplam.toLocaleString('tr-TR')} santimetrelik bir tahtayı ${parcaSayisi} eşit parçaya bölmektedir. Her parça kaç santimetredir?`,
+                    ans: parcaUzunluk
+                };
+            },
+            // 10. Fotoğraf klasörü sorusu kalıbı (Bölme)
+            () => {
+                const klasorFoto = getRandomInt(200, 450);
+                const klasorSayisi = getRandomInt(6, 12);
+                const toplam = klasorFoto * klasorSayisi;
+                return {
+                    text: `Bir fotoğrafçı ${toplam.toLocaleString('tr-TR')} fotoğrafı ${klasorSayisi} eşit klasöre yerleştirmiştir. Her klasörde kaç fotoğraf vardır?`,
+                    ans: klasorFoto
+                };
+            }
+        ];
+
+        return templates.map(generator => generator());
+    }
+
+    function shuffleArray(array) {
+        let arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function formatTime(secs) {
+        const m = Math.floor(secs / 60).toString().padStart(2, '0');
+        const s = (secs % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    function startTest() {
+        const generated = generateQuestions();
+        questions = shuffleArray(generated);
+        
+        currentIndex = 0;
+        userAnswers = [];
+        secondsPassed = 0;
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+
+        updateTimerDisplay();
+        showQuestion();
+
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            secondsPassed++;
+            updateTimerDisplay();
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const remaining = TIME_LIMIT - secondsPassed;
+        if (remaining >= 0) {
+            document.getElementById('timer').textContent = formatTime(remaining);
+            document.getElementById('timer').style.color = remaining <= 15 ? '#e74c3c' : '#2c3e50';
+        } else {
+            const extra = secondsPassed - TIME_LIMIT;
+            document.getElementById('timer').textContent = `+${formatTime(extra)}`;
+            document.getElementById('timer').style.color = '#e74c3c';
+        }
+    }
+
+    function showQuestion() {
+        const q = questions[currentIndex];
+        document.getElementById('current-q').textContent = currentIndex + 1;
+        document.getElementById('question-text').textContent = q.text;
+        const input = document.getElementById('answer-input');
+        input.value = '';
+        input.focus();
+    }
+
+    function handleAnswer(e) {
+        e.preventDefault();
+        const input = document.getElementById('answer-input');
+        const val = parseInt(input.value);
+
+        if (isNaN(val)) return;
+
+        userAnswers.push({
+            question: questions[currentIndex].text,
+            correct: questions[currentIndex].ans,
+            user: val,
+            isCorrect: val === questions[currentIndex].ans
+        });
+
+        currentIndex++;
+
+        if (currentIndex < questions.length) {
+            showQuestion();
+        } else {
+            finishTest();
+        }
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+
+        document.getElementById('final-time').textContent = formatTime(secondsPassed);
+        
+        const statusEl = document.getElementById('time-status');
+        if (secondsPassed <= TIME_LIMIT) {
+            statusEl.textContent = "Sürede Yetişti! 🎯";
+            statusEl.style.color = "#27ae60";
+        } else {
+            statusEl.textContent = "Süre Aşıldı ⏰";
+            statusEl.style.color = "#c0392b";
+        }
+
+        let correct = 0;
+        let wrong = 0;
+        const detailsContainer = document.getElementById('details-list');
+        detailsContainer.innerHTML = '';
+
+        userAnswers.forEach((item, idx) => {
+            if (item.isCorrect) correct++;
+            else wrong++;
+
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `
+                <div class="result-details">
+                    <strong>${idx + 1}. Soru</strong>
+                    <span>Cevabınız: ${item.user.toLocaleString('tr-TR')}</span>
+                </div>
+                <span class="badge ${item.isCorrect ? 'correct' : 'incorrect'}">
+                    ${item.isCorrect ? 'Doğru' : 'Yanlış (Doğru: ' + item.correct.toLocaleString('tr-TR') + ')'}
+                </span>
+            `;
+            detailsContainer.appendChild(div);
+        });
+
+        document.getElementById('correct-count').textContent = correct;
+        document.getElementById('wrong-count').textContent = wrong;
+    }
+
+    function resetTest() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>

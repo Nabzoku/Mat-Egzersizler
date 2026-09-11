@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oran ve Birim Oran Problemleri Hız Testi</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 550px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        p.subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .timer {
+            color: #e74c3c;
+            font-size: 18px;
+        }
+
+        .question-box {
+            font-size: 18px;
+            font-weight: 500;
+            color: #2c3e50;
+            margin: 25px 0;
+            min-height: 100px;
+            text-align: left;
+            line-height: 1.5;
+            background: #f4f6f9;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #2a5298;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #2a5298;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        button {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        button:hover {
+            background: #1e3c72;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .results {
+            text-align: left;
+        }
+
+        .results h2 {
+            text-align: center;
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+
+        .result-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-details {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            max-width: 70%;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .badge.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .scroll-area {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <!-- Başlangıç Ekranı -->
+    <div id="start-screen">
+        <h1>Oran ve Birim Oran Testi</h1>
+        <p class="subtitle">
+            10 adet hikayeli oran ve birim oran problemini çözün.<br><br>
+            Oran cevaplarını en sade kesir (örneğin: <strong>2/3</strong>) ya da tam sayı (örneğin: <strong>8</strong>) şeklinde girebilirsiniz.<br><br>
+            <strong>Hedef Süre: 1 dakika 45 saniye (105sn)</strong>
+        </p>
+        <button onclick="startTest()">Testi Başlat</button>
+    </div>
+
+    <!-- Test Ekranı -->
+    <div id="quiz-screen" class="hidden">
+        <div class="stats-bar">
+            <span>Soru: <span id="current-q">1</span>/10</span>
+            <span class="timer" id="timer">01:45</span>
+        </div>
+
+        <div class="question-box" id="question-text">
+            Yükleniyor...
+        </div>
+
+        <form id="quiz-form" onsubmit="handleAnswer(event)">
+            <div class="input-group">
+                <input type="text" id="answer-input" placeholder="Cevabınız (Örn: 2/3 veya 8)" required autofocus autocomplete="off">
+                <button type="submit">İleri</button>
+            </div>
+            <div class="input-hint">Kesirli cevaplarda klavyeden bölü ( / ) işaretini kullanın.</div>
+        </form>
+    </div>
+
+    <!-- Sonuç Ekranı -->
+    <div id="result-screen" class="hidden">
+        <div class="results">
+            <h2>Test Tamamlandı!</h2>
+            
+            <div class="result-summary">
+                <div class="result-item">
+                    <span>Geçen Süre:</span>
+                    <strong id="final-time">00:00</strong>
+                </div>
+                <div class="result-item">
+                    <span>Süre Durumu:</span>
+                    <strong id="time-status">-</strong>
+                </div>
+                <div class="result-item">
+                    <span>Doğru Sayısı:</span>
+                    <strong id="correct-count" style="color: #27ae60;">0</strong>
+                </div>
+                <div class="result-item">
+                    <span>Yanlış Sayısı:</span>
+                    <strong id="wrong-count" style="color: #c0392b;">0</strong>
+                </div>
+            </div>
+
+            <div class="scroll-area" id="details-list">
+                <!-- Detaylar -->
+            </div>
+
+            <button onclick="resetTest()" style="width: 100%;">Yeni Sorularla Tekrar Dene</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let questions = [];
+    let currentIndex = 0;
+    let userAnswers = [];
+    let timerInterval = null;
+    let secondsPassed = 0;
+    const TIME_LIMIT = 105; // 1 dk 45 sn = 105 saniye
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function gcd(a, b) {
+        a = Math.abs(a);
+        b = Math.abs(b);
+        while (b) {
+            let t = b;
+            b = a % b;
+            a = t;
+        }
+        return a;
+    }
+
+    function simplifyFraction(num, den) {
+        if (den === 0) return "0";
+        let g = gcd(num, den);
+        num = num / g;
+        den = den / g;
+        if (den === 1) return `${num}`;
+        return `${num}/${den}`;
+    }
+
+    // Görseldeki 10 problemin birebir kalıplarına göre rastgele soru üreteci
+    function generateQuestions() {
+        const templates = [
+            // 1. Teknoloji mağazası birim oran (örn: 15 kalem -> 10 şarj, 1 kalem için kaç şarj?)
+            () => {
+                const multi = getRandomInt(2, 5);
+                const g = getRandomInt(2, 5);
+                const kalem = g * getRandomInt(3, 6);
+                const sarj = g * getRandomInt(2, 5);
+                return {
+                    text: `Bir teknoloji mağazasında, her ${kalem} kalem satışına karşılık ${sarj} adet telefon şarjı satılmaktadır. Buna göre, her 1 kalem için kaç adet telefon şarjı satılmaktadır?`,
+                    ans: simplifyFraction(sarj, kalem),
+                    altDec: (sarj / kalem).toString().replace('.', ',')
+                };
+            },
+            // 2. Sera saksı/fide oranı (örn: 300 saksı / 1200 fide)
+            () => {
+                const saksi = getRandomInt(2, 6) * 100;
+                const kat = getRandomInt(3, 6);
+                const fide = saksi * kat;
+                return {
+                    text: `Bir sera alanında bulunan ${saksi} adet saksıya ${fide} adet fide dikilmiştir. Buna göre, bu seradaki saksı sayısının fide sayısına oranı nedir?`,
+                    ans: simplifyFraction(saksi, fide)
+                };
+            },
+            // 3. Müzik atölyesi zamanında gelen katılım oranı (örn: 25 katılımcıdan 15'i -> oran 15/25)
+            () => {
+                const g = getRandomInt(4, 10);
+                const toplam = g * getRandomInt(4, 6);
+                const gelen = g * getRandomInt(2, 3);
+                return {
+                    text: `Bir müzik atölyesinde yapılan yoklamada ${toplam} katılımcıdan ${gelen}'i derse zamanında gelmiştir. Zamanında gelen katılımcıların toplam katılımcı sayısına oranı nedir?`,
+                    ans: simplifyFraction(gelen, toplam)
+                };
+            },
+            // 4. Akvaryum tatlı su / tuzlu su oranı (örn: 40 tatlı su, 60 tuzlu su)
+            () => {
+                const g = getRandomInt(10, 25);
+                const tatli = g * getRandomInt(2, 5);
+                const tuzlu = g * getRandomInt(2, 5);
+                return {
+                    text: `Bir akvaryumda ${tatli} tatlı su balığı ve ${tuzlu} tuzlu su balığı bulunmaktadır. Buna göre, tatlı su balıklarının tuzlu su balıklarına oranı nedir?`,
+                    ans: simplifyFraction(tatli, tuzlu)
+                };
+            },
+            // 5. Sinema salonu öğrenci / tam bilet oranı (örn: 45 öğrenci, 75 tam)
+            () => {
+                const g = getRandomInt(10, 20);
+                const ogrenci = g * getRandomInt(2, 5);
+                const tam = g * getRandomInt(3, 6);
+                return {
+                    text: `Bir sinema salonunda satılan biletlerin ${ogrenci}'i öğrenci, ${tam}'i tam bilettir. Buna göre, öğrenci biletlerinin tam biletlere oranı nedir?`,
+                    ans: simplifyFraction(ogrenci, tam)
+                };
+            },
+            // 6. Teslimat firması saatte ortalama paket sayısı (bölme -> tam sayı)
+            () => {
+                const saat = getRandomInt(6, 12);
+                const birim = getRandomInt(11, 22);
+                const toplam = saat * birim;
+                return {
+                    text: `Bir teslimat firması ${saat} saatte ${toplam} paket dağıtmıştır. Buna göre, firmanın 1 saatte dağıttığı ortalama paket sayısı kaçtır?`,
+                    ans: `${birim}`
+                };
+            },
+            // 7. Atölye kutu başına parça sayısı (bölme -> tam sayı)
+            () => {
+                const kutu = getRandomInt(10, 20);
+                const parcaBasi = getRandomInt(6, 15);
+                const toplam = kutu * parcaBasi;
+                return {
+                    text: `Bir atölyede üretilen ${toplam} parça, ${kutu} kutuya eşit olarak yerleştirilmektedir. 1 kutuya düşen parça sayısı nedir?`,
+                    ans: `${parcaBasi}`
+                };
+            },
+            // 8. Bileklik renk oranı (mavi / toplam bileklik)
+            () => {
+                const g = getRandomInt(6, 12);
+                const toplam = g * getRandomInt(4, 6);
+                const mavi = g * getRandomInt(2, 3);
+                return {
+                    text: `Bir sosyal etkinlikte dağıtılan ${toplam} bileklikten ${mavi}'si mavi renktedir. Buna göre, mavi bilekliklerin toplam bileklik sayısına oranı nedir?`,
+                    ans: simplifyFraction(mavi, toplam)
+                };
+            },
+            // 9. Matbaa broşür / afiş oranı (örn: 12 afiş için 18 broşür -> broşür / afiş = 18/12)
+            () => {
+                const g = getRandomInt(4, 9);
+                const afis = g * getRandomInt(2, 4);
+                const brosur = g * getRandomInt(3, 5);
+                return {
+                    text: `Bir matbaada her ${afis} afiş için ${brosur} broşür basılmaktadır. Buna göre, broşür sayısının afiş sayısına oranı nedir?`,
+                    ans: simplifyFraction(brosur, afis)
+                };
+            },
+            // 10. Bahçe elma / armut ağacı oranı
+            () => {
+                const g = getRandomInt(8, 16);
+                const elma = g * getRandomInt(2, 4);
+                const armut = g * getRandomInt(3, 5);
+                return {
+                    text: `Bir bahçede bulunan ağaçların ${elma}'si elma, ${armut}'i armut ağacıdır. Buna göre, elma ağaçlarının armut ağaçlarına oranı nedir?`,
+                    ans: simplifyFraction(elma, armut)
+                };
+            }
+        ];
+
+        return templates.map(generator => generator());
+    }
+
+    function shuffleArray(array) {
+        let arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function formatTime(secs) {
+        const m = Math.floor(secs / 60).toString().padStart(2, '0');
+        const s = (secs % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    function normalizeInput(str) {
+        return str.trim().replace(/\s+/g, '').replace(',', '.');
+    }
+
+    function startTest() {
+        const generated = generateQuestions();
+        questions = shuffleArray(generated);
+        
+        currentIndex = 0;
+        userAnswers = [];
+        secondsPassed = 0;
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+
+        updateTimerDisplay();
+        showQuestion();
+
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            secondsPassed++;
+            updateTimerDisplay();
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const remaining = TIME_LIMIT - secondsPassed;
+        if (remaining >= 0) {
+            document.getElementById('timer').textContent = formatTime(remaining);
+            document.getElementById('timer').style.color = remaining <= 20 ? '#e74c3c' : '#2c3e50';
+        } else {
+            const extra = secondsPassed - TIME_LIMIT;
+            document.getElementById('timer').textContent = `+${formatTime(extra)}`;
+            document.getElementById('timer').style.color = '#e74c3c';
+        }
+    }
+
+    function showQuestion() {
+        const q = questions[currentIndex];
+        document.getElementById('current-q').textContent = currentIndex + 1;
+        document.getElementById('question-text').textContent = q.text;
+        const input = document.getElementById('answer-input');
+        input.value = '';
+        input.focus();
+    }
+
+    function handleAnswer(e) {
+        e.preventDefault();
+        const input = document.getElementById('answer-input');
+        const rawUser = input.value;
+        const normalizedUser = normalizeInput(rawUser);
+
+        if (!normalizedUser) return;
+
+        const currentQ = questions[currentIndex];
+        let isCorrect = (normalizedUser === currentQ.ans);
+
+        // Ondalık virgüllü girildiyse kontrol et
+        if (!isCorrect && currentQ.altDec && normalizedUser === normalizeInput(currentQ.altDec)) {
+            isCorrect = true;
+        }
+
+        userAnswers.push({
+            question: currentQ.text,
+            correct: currentQ.ans,
+            user: rawUser.trim(),
+            isCorrect: isCorrect
+        });
+
+        currentIndex++;
+
+        if (currentIndex < questions.length) {
+            showQuestion();
+        } else {
+            finishTest();
+        }
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+
+        document.getElementById('final-time').textContent = formatTime(secondsPassed);
+        
+        const statusEl = document.getElementById('time-status');
+        if (secondsPassed <= TIME_LIMIT) {
+            statusEl.textContent = "Sürede Yetişti! 🎯";
+            statusEl.style.color = "#27ae60";
+        } else {
+            statusEl.textContent = "Süre Aşıldı ⏰";
+            statusEl.style.color = "#c0392b";
+        }
+
+        let correct = 0;
+        let wrong = 0;
+        const detailsContainer = document.getElementById('details-list');
+        detailsContainer.innerHTML = '';
+
+        userAnswers.forEach((item, idx) => {
+            if (item.isCorrect) correct++;
+            else wrong++;
+
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `
+                <div class="result-details">
+                    <strong>${idx + 1}. Soru</strong>
+                    <span>Cevabınız: ${item.user}</span>
+                </div>
+                <span class="badge ${item.isCorrect ? 'correct' : 'incorrect'}">
+                    ${item.isCorrect ? 'Doğru' : 'Yanlış (Doğru: ' + item.correct + ')'}
+                </span>
+            `;
+            detailsContainer.appendChild(div);
+        });
+
+        document.getElementById('correct-count').textContent = correct;
+        document.getElementById('wrong-count').textContent = wrong;
+    }
+
+    function resetTest() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>

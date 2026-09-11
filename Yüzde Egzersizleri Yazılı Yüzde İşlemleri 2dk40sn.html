@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yazılı Yüzde İşlemleri Testi</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 550px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        p.subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .timer {
+            color: #e74c3c;
+            font-size: 18px;
+        }
+
+        .question-box {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 25px 0;
+            min-height: 90px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fdfdfd;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px dashed #cbd5e1;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #2a5298;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        button {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        button:hover {
+            background: #1e3c72;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .results {
+            text-align: left;
+        }
+
+        .results h2 {
+            text-align: center;
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+
+        .result-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .badge.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .scroll-area {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <!-- Başlangıç Ekranı -->
+    <div id="start-screen">
+        <h1>Yazılı Yüzde İşlemleri Testi</h1>
+        <p class="subtitle">
+            Görseldeki 10 adet yüzde işlemini çözün.<br><br>
+            "Yüzde kaçıdır?" sorularında sadece sayı kısmını yazabilirsiniz (Örn: <strong>40</strong> veya <strong>%40</strong>).<br>
+            Ondalıklı sonuçlar için virgül (,) veya nokta (.) kullanabilirsiniz.<br><br>
+            <strong>Hedef Süre: 2 dakika 40 saniye (160sn)</strong>
+        </p>
+        <button onclick="startTest()">Testi Başlat</button>
+    </div>
+
+    <!-- Test Ekranı -->
+    <div id="quiz-screen" class="hidden">
+        <div class="stats-bar">
+            <span>Soru: <span id="current-q">1</span>/10</span>
+            <span class="timer" id="timer">02:40</span>
+        </div>
+
+        <div class="question-box" id="question-text">
+            Yükleniyor...
+        </div>
+
+        <form id="quiz-form" onsubmit="handleAnswer(event)">
+            <div class="input-group">
+                <input type="text" id="answer-input" placeholder="Cevabınız (Örn: 9,45 veya 40)" required autofocus autocomplete="off">
+                <button type="submit">İleri</button>
+            </div>
+            <div class="input-hint">Cevabınızı girip Enter'a basabilirsiniz.</div>
+        </form>
+    </div>
+
+    <!-- Sonuç Ekranı -->
+    <div id="result-screen" class="hidden">
+        <div class="results">
+            <h2>Test Tamamlandı!</h2>
+            
+            <div class="result-summary">
+                <div class="result-item">
+                    <span>Geçen Süre:</span>
+                    <strong id="final-time">00:00</strong>
+                </div>
+                <div class="result-item">
+                    <span>Süre Durumu:</span>
+                    <strong id="time-status">-</strong>
+                </div>
+                <div class="result-item">
+                    <span>Doğru Sayısı:</span>
+                    <strong id="correct-count" style="color: #27ae60;">0</strong>
+                </div>
+                <div class="result-item">
+                    <span>Yanlış Sayısı:</span>
+                    <strong id="wrong-count" style="color: #c0392b;">0</strong>
+                </div>
+            </div>
+
+            <div class="scroll-area" id="details-list">
+                <!-- Detaylar -->
+            </div>
+
+            <button onclick="resetTest()" style="width: 100%;">Yeni Sorularla Tekrar Dene</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let questions = [];
+    let currentIndex = 0;
+    let userAnswers = [];
+    let timerInterval = null;
+    let secondsPassed = 0;
+    const TIME_LIMIT = 160; // 2 dakika 40 saniye = 160 saniye
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function formatNumberTr(val, decimals = 2) {
+        let rounded = Number(Math.round(val + 'e' + decimals) + 'e-' + decimals);
+        return rounded.toString().replace('.', ',');
+    }
+
+    function getSuffix(num, caseType) {
+        // Türkçe kesme işareti ve ek kuralları
+        let lastDigit = num % 10;
+        let lastTwoDigits = num % 100;
+
+        if (caseType === 'un') { // 'in / 'ün / 'un / 'ın
+            if ([10, 30, 40, 60, 90].includes(lastTwoDigits) || [0].includes(lastDigit) && !lastTwoDigits) return "'ün";
+            if ([20, 50, 70, 80].includes(lastTwoDigits)) return "'in";
+            if ([1, 2, 7, 8].includes(lastDigit)) return "'in";
+            if ([3, 4, 5].includes(lastDigit)) return "'ün";
+            if ([6].includes(lastDigit)) return "'nın";
+            if ([9].includes(lastDigit)) return "'un";
+            return "'in";
+        } else if (caseType === 'nin') { // 'nin / 'nın / 'nun / 'nün
+            if ([10, 30, 40, 60, 90].includes(lastTwoDigits)) return "'un";
+            if ([20, 50, 70, 80].includes(lastTwoDigits)) return "'in";
+            if ([1, 2, 7, 8].includes(lastDigit)) return "'in";
+            if ([3, 4, 5].includes(lastDigit)) return "'ün";
+            if ([6].includes(lastDigit)) return "'nın";
+            if ([9].includes(lastDigit)) return "'un";
+            return "'in";
+        }
+        return "'in";
+    }
+
+    function generateQuestions() {
+        const templates = [
+            // 1. 63'ün %15'i kaçtır? (A'nın %B'si)
+            () => {
+                let num = getRandomInt(40, 95);
+                let pct = [12, 15, 18, 22, 28][getRandomInt(0, 4)];
+                let ans = (num * pct) / 100;
+                return {
+                    text: `${num}'ün %${pct}'i kaçtır?`,
+                    ansStr: formatNumberTr(ans)
+                };
+            },
+            // 2. 84'ün %30'u kaçtır? (A'nın %B0'ı)
+            () => {
+                let num = getRandomInt(30, 95);
+                let pct = getRandomInt(1, 9) * 10;
+                let ans = (num * pct) / 100;
+                return {
+                    text: `${num}'ün %${pct}'u kaçtır?`,
+                    ansStr: formatNumberTr(ans)
+                };
+            },
+            // 3. 28, 70'in yüzde kaçıdır?
+            () => {
+                let base = getRandomInt(4, 12) * 10; // 40, 50, 60...
+                let pct = [20, 25, 30, 40, 50, 60, 70, 75, 80][getRandomInt(0, 8)];
+                let part = (base * pct) / 100;
+                return {
+                    text: `${formatNumberTr(part)}, ${base}'in yüzde kaçıdır?`,
+                    ansStr: pct.toString()
+                };
+            },
+            // 4. 144, 240'ın yüzde kaçıdır?
+            () => {
+                let base = getRandomInt(12, 35) * 10; // 120, 150, 200, 240...
+                let pct = [35, 45, 55, 60, 65, 70, 75, 80, 85][getRandomInt(0, 8)];
+                let part = (base * pct) / 100;
+                return {
+                    text: `${formatNumberTr(part)}, ${base}'in yüzde kaçıdır?`,
+                    ansStr: pct.toString()
+                };
+            },
+            // 5. 96'nın %35'i kaçtır?
+            () => {
+                let num = getRandomInt(40, 98);
+                let pct = [15, 25, 35, 45, 55, 65][getRandomInt(0, 5)];
+                let ans = (num * pct) / 100;
+                return {
+                    text: `${num}'nın %${pct}'i kaçtır?`,
+                    ansStr: formatNumberTr(ans)
+                };
+            },
+            // 6. 72'nin %25'i kaçtır? (%25, %50, %75 çeyrek/yarım katları)
+            () => {
+                let num = getRandomInt(8, 30) * 4; // 32, 36, 40... 72
+                let pct = [25, 50, 75][getRandomInt(0, 2)];
+                let ans = (num * pct) / 100;
+                return {
+                    text: `${num}'nin %${pct}'i kaçtır?`,
+                    ansStr: formatNumberTr(ans)
+                };
+            },
+            // 7. 56'nın %45'i kaçtır?
+            () => {
+                let num = getRandomInt(30, 80);
+                let pct = [15, 35, 45, 65, 85][getRandomInt(0, 4)];
+                let ans = (num * pct) / 100;
+                return {
+                    text: `${num}'nın %${pct}'i kaçtır?`,
+                    ansStr: formatNumberTr(ans)
+                };
+            },
+            // 8. 51, 170'in yüzde kaçıdır?
+            () => {
+                let base = getRandomInt(11, 25) * 10; // 110, 130, 170...
+                let pct = [15, 20, 25, 30, 35, 40, 45, 60][getRandomInt(0, 7)];
+                let part = (base * pct) / 100;
+                return {
+                    text: `${formatNumberTr(part)}, ${base}'in yüzde kaçıdır?`,
+                    ansStr: pct.toString()
+                };
+            },
+            // 9. 304, 380'in yüzde kaçıdır?
+            () => {
+                let base = getRandomInt(20, 50) * 10; // 200, 380...
+                let pct = [60, 65, 70, 75, 80, 85, 90][getRandomInt(0, 6)];
+                let part = (base * pct) / 100;
+                return {
+                    text: `${formatNumberTr(part)}, ${base}'in yüzde kaçıdır?`,
+                    ansStr: pct.toString()
+                };
+            },
+            // 10. 45, 180'in yüzde kaçıdır?
+            () => {
+                let base = getRandomInt(8, 25) * 10; // 80, 120, 180...
+                let pct = [15, 25, 35, 40, 45, 75][getRandomInt(0, 5)];
+                let part = (base * pct) / 100;
+                return {
+                    text: `${formatNumberTr(part)}, ${base}'in yüzde kaçıdır?`,
+                    ansStr: pct.toString()
+                };
+            }
+        ];
+
+        return templates.map(fn => fn());
+    }
+
+    function shuffleArray(array) {
+        let arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function formatTime(secs) {
+        const m = Math.floor(secs / 60).toString().padStart(2, '0');
+        const s = (secs % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    function normalizeInput(str) {
+        return str.trim().replace('%', '').replace('.', ',').replace(/\s+/g, '');
+    }
+
+    function startTest() {
+        const generated = generateQuestions();
+        questions = shuffleArray(generated);
+        
+        currentIndex = 0;
+        userAnswers = [];
+        secondsPassed = 0;
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+
+        updateTimerDisplay();
+        showQuestion();
+
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            secondsPassed++;
+            updateTimerDisplay();
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const remaining = TIME_LIMIT - secondsPassed;
+        if (remaining >= 0) {
+            document.getElementById('timer').textContent = formatTime(remaining);
+            document.getElementById('timer').style.color = remaining <= 30 ? '#e74c3c' : '#2c3e50';
+        } else {
+            const extra = secondsPassed - TIME_LIMIT;
+            document.getElementById('timer').textContent = `+${formatTime(extra)}`;
+            document.getElementById('timer').style.color = '#e74c3c';
+        }
+    }
+
+    function showQuestion() {
+        const q = questions[currentIndex];
+        document.getElementById('current-q').textContent = currentIndex + 1;
+        document.getElementById('question-text').textContent = q.text;
+
+        const input = document.getElementById('answer-input');
+        input.value = '';
+        input.focus();
+    }
+
+    function handleAnswer(e) {
+        e.preventDefault();
+        const input = document.getElementById('answer-input');
+        const rawUser = input.value;
+        const normalizedUser = normalizeInput(rawUser);
+
+        if (!normalizedUser) return;
+
+        const currentQ = questions[currentIndex];
+        const normalizedTarget = normalizeInput(currentQ.ansStr);
+        const isCorrect = (normalizedUser === normalizedTarget);
+
+        userAnswers.push({
+            question: currentQ.text,
+            correct: currentQ.ansStr,
+            user: rawUser.trim(),
+            isCorrect: isCorrect
+        });
+
+        currentIndex++;
+
+        if (currentIndex < questions.length) {
+            showQuestion();
+        } else {
+            finishTest();
+        }
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+
+        document.getElementById('final-time').textContent = formatTime(secondsPassed);
+        
+        const statusEl = document.getElementById('time-status');
+        if (secondsPassed <= TIME_LIMIT) {
+            statusEl.textContent = "Sürede Yetişti! 🎯";
+            statusEl.style.color = "#27ae60";
+        } else {
+            statusEl.textContent = "Süre Aşıldı ⏰";
+            statusEl.style.color = "#c0392b";
+        }
+
+        let correct = 0;
+        let wrong = 0;
+        const detailsContainer = document.getElementById('details-list');
+        detailsContainer.innerHTML = '';
+
+        userAnswers.forEach((item, idx) => {
+            if (item.isCorrect) correct++;
+            else wrong++;
+
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `
+                <span>
+                    ${idx + 1}. ${item.question} &nbsp; <strong>${item.user}</strong>
+                </span>
+                <span class="badge ${item.isCorrect ? 'correct' : 'incorrect'}">
+                    ${item.isCorrect ? 'Doğru' : 'Yanlış (Doğru: ' + item.correct + ')'}
+                </span>
+            `;
+            detailsContainer.appendChild(div);
+        });
+
+        document.getElementById('correct-count').textContent = correct;
+        document.getElementById('wrong-count').textContent = wrong;
+    }
+
+    function resetTest() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>

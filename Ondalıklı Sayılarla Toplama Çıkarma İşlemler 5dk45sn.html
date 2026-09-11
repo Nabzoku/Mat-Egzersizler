@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ondalıklı Sayılarla Toplama ve Çıkarma Hız Testi</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 520px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        p.subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .timer {
+            color: #e74c3c;
+            font-size: 18px;
+        }
+
+        .question-container {
+            background: #fdfdfd;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 25px 15px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            min-height: 100px;
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px;
+            font-size: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #2a5298;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        button:hover {
+            background: #1e3c72;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .results {
+            text-align: left;
+        }
+
+        .results h2 {
+            text-align: center;
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+
+        .result-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .badge.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .scroll-area {
+            max-height: 220px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <!-- Başlangıç Ekranı -->
+    <div id="start-screen">
+        <h1>Ondalıklı Sayılar Hız Testi</h1>
+        <p class="subtitle">
+            Görsel formatta hazırlanmış 24 adet ondalıklı sayılarla toplama ve çıkarma işlemini çözün.<br><br>
+            Cevaplarda virgül (,) veya nokta (.) kullanabilirsiniz.<br>
+            <strong>Hedef Süre: 5 dakika 45 saniye (345sn)</strong>
+        </p>
+        <button onclick="startTest()">Testi Başlat</button>
+    </div>
+
+    <!-- Test Ekranı -->
+    <div id="quiz-screen" class="hidden">
+        <div class="stats-bar">
+            <span>Soru: <span id="current-q">1</span>/24</span>
+            <span class="timer" id="timer">05:45</span>
+        </div>
+
+        <div class="question-container" id="question-box">
+            <!-- İşlem buraya gelecek -->
+        </div>
+
+        <form id="quiz-form" onsubmit="handleAnswer(event)">
+            <div class="input-group">
+                <input type="text" id="answer-input" placeholder="Cevabınız (Örn: 1,75)" required autofocus autocomplete="off">
+                <button type="submit">İleri</button>
+            </div>
+            <div class="input-hint">Ondalık ayırıcı olarak virgül (,) veya nokta (.) kullanabilirsiniz.</div>
+        </form>
+    </div>
+
+    <!-- Sonuç Ekranı -->
+    <div id="result-screen" class="hidden">
+        <div class="results">
+            <h2>Test Tamamlandı!</h2>
+            
+            <div class="result-summary">
+                <div class="result-item">
+                    <span>Geçen Süre:</span>
+                    <strong id="final-time">00:00</strong>
+                </div>
+                <div class="result-item">
+                    <span>Süre Durumu:</span>
+                    <strong id="time-status">-</strong>
+                </div>
+                <div class="result-item">
+                    <span>Doğru Sayısı:</span>
+                    <strong id="correct-count" style="color: #27ae60;">0</strong>
+                </div>
+                <div class="result-item">
+                    <span>Yanlış Sayısı:</span>
+                    <strong id="wrong-count" style="color: #c0392b;">0</strong>
+                </div>
+            </div>
+
+            <div class="scroll-area" id="details-list">
+                <!-- Sonuç detayları -->
+            </div>
+
+            <button onclick="resetTest()" style="width: 100%;">Yeni Sorularla Tekrar Dene</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let questions = [];
+    let currentIndex = 0;
+    let userAnswers = [];
+    let timerInterval = null;
+    let secondsPassed = 0;
+    const TIME_LIMIT = 345; // 5 dakika 45 saniye (345 saniye)
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function formatTurkishDecimal(val, maxDecimals = 3) {
+        // Javascript hassasiyet problemlerini önlemek için round yapıyoruz
+        let rounded = Number(Math.round(val + 'e' + maxDecimals) + 'e-' + maxDecimals);
+        return rounded.toString().replace('.', ',');
+    }
+
+    // Görseldeki 24 adet ondalık işlem kalıbı
+    function generateQuestions() {
+        const templates = [
+            // 1. (X,X - Y,XX) -> örn: 9,6 - 7,85
+            () => {
+                let a = getRandomInt(5, 15) + getRandomInt(1, 9)/10;
+                let b = getRandomInt(1, Math.floor(a)-1) + getRandomInt(10, 99)/100;
+                a = Math.round(a * 10) / 10;
+                b = Math.round(b * 100) / 100;
+                if (a <= b) a = b + 1.2;
+                return { num1: a, op: '-', num2: b, ans: a - b };
+            },
+            // 2. (0,XX + XX,X) -> örn: 0,86 + 14,2
+            () => {
+                let a = getRandomInt(10, 99) / 100;
+                let b = getRandomInt(10, 30) + getRandomInt(1, 9)/10;
+                b = Math.round(b * 10) / 10;
+                return { num1: a, op: '+', num2: b, ans: a + b };
+            },
+            // 3. (XX,XX + XX,X) -> örn: 72,85 + 19,4
+            () => {
+                let a = getRandomInt(30, 80) + getRandomInt(10, 99)/100;
+                let b = getRandomInt(10, 40) + getRandomInt(1, 9)/10;
+                a = Math.round(a * 100) / 100;
+                b = Math.round(b * 10) / 10;
+                return { num1: a, op: '+', num2: b, ans: a + b };
+            },
+            // 4. (XX - X,XX) -> örn: 18 - 7,68
+            () => {
+                let a = getRandomInt(12, 35);
+                let b = getRandomInt(2, a - 3) + getRandomInt(10, 99)/100;
+                b = Math.round(b * 100) / 100;
+                return { num1: a, op: '-', num2: b, ans: a - b };
+            },
+            // 5. (XX,X + XX,XX) -> örn: 45,9 + 27,85
+            () => {
+                let a = getRandomInt(20, 60) + getRandomInt(1, 9)/10;
+                let b = getRandomInt(10, 40) + getRandomInt(10, 99)/100;
+                a = Math.round(a * 10) / 10;
+                b = Math.round(b * 100) / 100;
+                return { num1: a, op: '+', num2: b, ans: a + b };
+            },
+            // 6. (XX,X + X,XX) -> örn: 34,8 + 7,65
+            () => {
+                let a = getRandomInt(20, 50) + getRandomInt(1, 9)/10;
+                let b = getRandomInt(3, 9) + getRandomInt(10, 99)/100;
+                a = Math.round(a * 10) / 10;
+                b = Math.round(b * 100) / 100;
+                return { num1: a, op: '+', num2: b, ans: a + b };
+            },
+            // 7. (X,XX + X,X) -> örn: 2,45 + 3,8
+            () => {
+                let a = getRandomInt(1, 8) + getRandomInt(10, 99)/100;
+                let b = getRandomInt(1, 8) + getRandomInt(1, 9)/10;
+                a = Math.round(a * 100) / 100;
+                b = Math.round(b * 10) / 10;
+                return { num1: a, op: '+', num2: b, ans: a + b };
+            },
+            // 8. (XX,XXX - XX,XX) -> örn: 40,192 - 19,85
+            () => {
+                let a = getRandomInt(30, 60) + getRandomInt(100, 999)/1000;
+                let b = getRandomInt(10, Math.floor(a)-5) + getRandomInt(10, 99)/100;
+                a = Math.round(a * 1000) / 1000;
+                b = Math.round(b * 100) / 100;
+                return { num1: a, op: '-', num2: b, ans: a - b };
+            },
+            // 9. (XXX - XXX,X) -> örn: 813 - 276,8
+            () => {
+                let a = getRandomInt(400, 900);
+                let b = getRandomInt(100, a - 50) + getRandomInt(1, 9)/10;
+                b = Math.round(b * 10) / 10;
+                return { num1: a, op: '-', num2: b, ans: a - b };
+            },
+            // 10. (XX - 0,XXX) -> örn: 18 - 0,172
+            () => {
+                let a = getRandomInt(10, 40);
+                let b = getRandomInt(100, 999) / 1000;
+                return { num1: a, op: '-', num2: b, ans: a - b };
+            },
+            // 11. (X,XXX + 0,XXX) -> örn: 1,521 + 0,753
+            () => {
+                let a = getRandomInt(1, 5) + getRandomInt(100, 999)/1000;
+                let b = getRandomInt(100, 999) / 1000;
+                a = Math.round(a * 1000) / 1000;
+                return { num1: a, op: '+', num2: b, ans: a + b };
+            },
+            // 12. (XXX,XX - XX,X) -> örn: 120,45 - 47,7
+            () => {
+                let a = getRandomInt(100, 200) + getRandomInt(10, 99)/100;
+                let b = getRandomInt(20, 80) + getRandomInt(1, 9)/10;
+                a = Math.round(a * 100) / 100;
+                b = Math.round(b * 10) / 10;
+                return { num1: a, op: '-', num2: b, ans: a - b };
+            },
+            // 13. (XX,XX + X,X) -> örn: 12,75 + 8,6
+            () => {
+                let a = getRandomInt(10, 30) + getRandomInt(10, 99)/100;
+                let b = getRandomInt(3, 9) + getRandomInt(1, 9)/10;
+                a = Math.round(a * 100) / 100;
+                b = Math.round(b * 10) / 10;
+                return { num1: a, op: '+', num2: b, ans: a + b };
+            },
+            // 14. (XX,X + XX,XX) -> örn: 62,4 + 17,35
+            () => {
+                let a = getRandomInt(40, 80) + getRandomInt(1, 9)/10;
+                let b = getRandomInt(10, 30) + getRandomInt(10, 99)/100;
+                a = Math.round(a * 10) / 10;
+                b = Math.round(b * 100) / 100;
+                return { num1: a, op: '+', num2: b, ans: a + b };
+            },
+            // 15. (X,X - X,XX) -> örn: 9,2 - 4,85
+            () => {
+                let a = getRandomInt(5, 12) + getRandomInt(1, 9)/10;
+                let b = getRandomInt(1, Math.floor(a)-1) + getRandomInt(10, 99)/100;
+                a = Math.round(a * 10) / 10;
+                b = Math.round(b * 100) / 100;
+                if (a <= b) a = b + 1.1;
+                return { num1: a, op: '-', num2: b, ans: a - b };
+            },
+            // 16. (X,X + X,XX) -> örn: 4,8 + 2,35
+            () => {
+                let a = getRandomInt(2, 8) + getRandomInt(1, 9)/10;
+                let b = getRandomInt(1, 6) + getRandomInt(10, 99)/100;
+                a = Math.round(a * 10) / 10;
+                b = Math.round(b * 100) / 100;
+                return { num1: a, op: '+', num2: b, ans: a + b };
+            },
+            // 17. (XX,XX + X,X) -> örn: 61,45 + 8,3
+            () => {
+                let a = getRandomInt(30, 80) + getRandomInt(10, 99)/100;
+                let b = getRandomInt(2, 9) + getRandomInt(1, 9)/10;
+                a = Math.round(a * 100) / 100;
+                b = Math.round(b * 10) / 10;
+                return { num1: a, op: '+', num2: b, ans: a + b };
+            },
+            // 18. (X,XX + XX,XX) -> örn: 5,92 + 14,38
+            () => {
+                let a = getRandomInt(2, 9) + getRandomInt(10, 99)/100;
+                let b = getRandomInt(10, 30) + getRandomInt(10, 99)/100;
+                a = Math.round(a * 100) / 100;
+                b = Math.round(b * 100) / 100;
+                return { num1: a, op: '+', num2: b, ans: a + b };
+            },
+            // 19. (XX,X + X,XX) -> örn: 49,8 + 2,35
+            () => {
+                let a = getRandomInt(20, 60) + getRandomInt(1, 9)/10;
+                let b = getRandomInt(1, 8) + getRandomInt(10, 99)/100;
+                a = Math.round(a * 10) / 10;
+                b = Math.round(b * 100) / 100;
+                return { num1: a, op: '+', num2: b, ans: a + b };
+            },
+            // 20. (XXX - XX,XX) -> örn: 128 - 47,68
+            () => {
+                let a = getRandomInt(100, 250);
+                let b = getRandomInt(20, 90) + getRandomInt(10, 99)/100;
+                b = Math.round(b * 100) / 100;
+                return { num1: a, op: '-', num2: b, ans: a - b };
+            },
+            // 21. (XXX,X + XX,XX) -> örn: 245,5 + 83,75
+            () => {
+                let a = getRandomInt(150, 300) + getRandomInt(1, 9)/10;
+                let b = getRandomInt(40, 95) + getRandomInt(10, 99)/100;
+                a = Math.round(a * 10) / 10;
+                b = Math.round(b * 100) / 100;
+                return { num1: a, op: '+', num2: b, ans: a + b };
+            },
+            // 22. (XX,X - XX,XX) -> örn: 96,2 - 38,45
+            () => {
+                let a = getRandomInt(50, 99) + getRandomInt(1, 9)/10;
+                let b = getRandomInt(10, 45) + getRandomInt(10, 99)/100;
+                a = Math.round(a * 10) / 10;
+                b = Math.round(b * 100) / 100;
+                return { num1: a, op: '-', num2: b, ans: a - b };
+            },
+            // 23. (XXX - XXX,X) -> örn: 520 - 136,8
+            () => {
+                let a = getRandomInt(300, 700);
+                let b = getRandomInt(100, a - 100) + getRandomInt(1, 9)/10;
+                b = Math.round(b * 10) / 10;
+                return { num1: a, op: '-', num2: b, ans: a - b };
+            },
+            // 24. (XXX,X - XX,XX) -> örn: 298,6 - 79,45
+            () => {
+                let a = getRandomInt(150, 400) + getRandomInt(1, 9)/10;
+                let b = getRandomInt(30, 120) + getRandomInt(10, 99)/100;
+                a = Math.round(a * 10) / 10;
+                b = Math.round(b * 100) / 100;
+                return { num1: a, op: '-', num2: b, ans: a - b };
+            }
+        ];
+
+        return templates.map(generator => {
+            const item = generator();
+            item.strNum1 = formatTurkishDecimal(item.num1);
+            item.strNum2 = formatTurkishDecimal(item.num2);
+            item.strAns = formatTurkishDecimal(item.ans);
+            return item;
+        });
+    }
+
+    function shuffleArray(array) {
+        let arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function formatTime(secs) {
+        const m = Math.floor(secs / 60).toString().padStart(2, '0');
+        const s = (secs % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    function normalizeInput(str) {
+        return str.trim().replace('.', ',').replace(/\s+/g, '');
+    }
+
+    function startTest() {
+        const generated = generateQuestions();
+        questions = shuffleArray(generated);
+        
+        currentIndex = 0;
+        userAnswers = [];
+        secondsPassed = 0;
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+
+        updateTimerDisplay();
+        showQuestion();
+
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            secondsPassed++;
+            updateTimerDisplay();
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const remaining = TIME_LIMIT - secondsPassed;
+        if (remaining >= 0) {
+            document.getElementById('timer').textContent = formatTime(remaining);
+            document.getElementById('timer').style.color = remaining <= 30 ? '#e74c3c' : '#2c3e50';
+        } else {
+            const extra = secondsPassed - TIME_LIMIT;
+            document.getElementById('timer').textContent = `+${formatTime(extra)}`;
+            document.getElementById('timer').style.color = '#e74c3c';
+        }
+    }
+
+    function showQuestion() {
+        const q = questions[currentIndex];
+        document.getElementById('current-q').textContent = currentIndex + 1;
+        
+        const box = document.getElementById('question-box');
+        box.textContent = `${q.strNum1} ${q.op} ${q.strNum2} =`;
+
+        const input = document.getElementById('answer-input');
+        input.value = '';
+        input.focus();
+    }
+
+    function handleAnswer(e) {
+        e.preventDefault();
+        const input = document.getElementById('answer-input');
+        const rawUser = input.value;
+        const normalizedUser = normalizeInput(rawUser);
+
+        if (!normalizedUser) return;
+
+        const currentQ = questions[currentIndex];
+        const isCorrect = (normalizedUser === currentQ.strAns);
+
+        userAnswers.push({
+            q: currentQ,
+            user: rawUser.trim(),
+            isCorrect: isCorrect
+        });
+
+        currentIndex++;
+
+        if (currentIndex < questions.length) {
+            showQuestion();
+        } else {
+            finishTest();
+        }
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+
+        document.getElementById('final-time').textContent = formatTime(secondsPassed);
+        
+        const statusEl = document.getElementById('time-status');
+        if (secondsPassed <= TIME_LIMIT) {
+            statusEl.textContent = "Sürede Yetişti! 🎯";
+            statusEl.style.color = "#27ae60";
+        } else {
+            statusEl.textContent = "Süre Aşıldı ⏰";
+            statusEl.style.color = "#c0392b";
+        }
+
+        let correct = 0;
+        let wrong = 0;
+        const detailsContainer = document.getElementById('details-list');
+        detailsContainer.innerHTML = '';
+
+        userAnswers.forEach((item, idx) => {
+            if (item.isCorrect) correct++;
+            else wrong++;
+
+            const q = item.q;
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `
+                <span>
+                    ${idx + 1}. ${q.strNum1} ${q.op} ${q.strNum2} = <strong>${item.user}</strong>
+                </span>
+                <span class="badge ${item.isCorrect ? 'correct' : 'incorrect'}">
+                    ${item.isCorrect ? 'Doğru' : 'Yanlış (Doğru: ' + q.strAns + ')'}
+                </span>
+            `;
+            detailsContainer.appendChild(div);
+        });
+
+        document.getElementById('correct-count').textContent = correct;
+        document.getElementById('wrong-count').textContent = wrong;
+    }
+
+    function resetTest() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>
