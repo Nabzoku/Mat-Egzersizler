@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basamaklarına Ayırma İşlemler</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 580px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        p.subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .question-container {
+            background: #fdfdfd;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 22px 15px 18px;
+            margin: 15px 0;
+            min-height: 90px;
+        }
+
+        .number-display {
+            font-size: 30px;
+            font-weight: 700;
+            color: #1e293b;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .number-type {
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            background: #f1f5f9;
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #2a5298;
+        }
+
+        .helper-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .helper-btn {
+            background: #e0e7ff;
+            color: #3730a3;
+            border: 1px solid #a5b4fc;
+            padding: 6px 10px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .helper-btn:hover {
+            background: #c7d2fe;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 15px;
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        button.main-btn {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+            width: 100%;
+        }
+
+        button.main-btn:hover {
+            background: #1e3c72;
+        }
+
+        button.main-btn:active {
+            transform: scale(0.98);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .feedback {
+            margin: 15px 0;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 15px;
+            display: none;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .feedback .correct-answer {
+            font-weight: 400;
+            font-size: 13px;
+            margin-top: 6px;
+            word-break: break-all;
+        }
+
+        .results {
+            text-align: left;
+        }
+
+        .results h2 {
+            text-align: center;
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+
+        .result-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+            gap: 10px;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-details {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            max-width: 72%;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .badge.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .scroll-area {
+            max-height: 260px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .example-box {
+            background: #f0f7ff;
+            border-left: 4px solid #2a5298;
+            padding: 12px 15px;
+            margin: 15px 0 20px;
+            text-align: left;
+            font-size: 13px;
+            color: #334155;
+            border-radius: 0 8px 8px 0;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <!-- Başlangıç Ekranı -->
+    <div id="start-screen">
+        <h1>Basamaklarına Ayırma</h1>
+        <p class="subtitle">
+            Verilen sayıları <strong>10'un kuvvetleri</strong> şeklinde basamaklarına ayırın.<br>
+            Süre sınırı yoktur. 10 soru vardır.
+        </p>
+
+        <div class="example-box">
+            <strong>Örnek (Tam sayı):</strong> 7.659.882 →<br>
+            <code>7×10^6 + 6×10^5 + 5×10^4 + 9×10^3 + 8×10^2 + 8×10^1 + 2×10^0</code><br><br>
+            <strong>Örnek (Ondalıklı):</strong> 45,67 →<br>
+            <code>4×10^1 + 5×10^0 + 6×10^-1 + 7×10^-2</code><br><br>
+            <strong>Kolay yazım:</strong> × yerine * veya x kullanabilirsiniz. Sıfır basamakları yazmayın.
+        </div>
+
+        <button class="main-btn" onclick="startTest()">Testi Başlat</button>
+    </div>
+
+    <!-- Test Ekranı -->
+    <div id="quiz-screen" class="hidden">
+        <div class="stats-bar">
+            <span>Soru: <span id="current-q">1</span>/10</span>
+            <span style="color:#64748b; font-size:14px;">Süre sınırı yok</span>
+        </div>
+
+        <div class="question-container" id="question-box">
+            <div class="number-display" id="number-display">-</div>
+            <div class="number-type" id="number-type">-</div>
+        </div>
+
+        <div class="helper-buttons" id="helper-buttons">
+            <button type="button" class="helper-btn" onclick="insertText('×10^')">×10^</button>
+            <button type="button" class="helper-btn" onclick="insertText(' + ')"> + </button>
+            <button type="button" class="helper-btn" onclick="insertText('10^6')">10^6</button>
+            <button type="button" class="helper-btn" onclick="insertText('10^5')">10^5</button>
+            <button type="button" class="helper-btn" onclick="insertText('10^4')">10^4</button>
+            <button type="button" class="helper-btn" onclick="insertText('10^3')">10^3</button>
+            <button type="button" class="helper-btn" onclick="insertText('10^2')">10^2</button>
+            <button type="button" class="helper-btn" onclick="insertText('10^1')">10^1</button>
+            <button type="button" class="helper-btn" onclick="insertText('10^0')">10^0</button>
+            <button type="button" class="helper-btn" onclick="insertText('10^-1')">10^-1</button>
+            <button type="button" class="helper-btn" onclick="insertText('10^-2')">10^-2</button>
+            <button type="button" class="helper-btn" onclick="insertText('10^-3')">10^-3</button>
+        </div>
+
+        <form id="quiz-form" onsubmit="handleAnswer(event)">
+            <div class="input-group">
+                <input type="text" id="answer-input" placeholder="Örn: 7×10^6 + 6×10^5 + ..." required autocomplete="off">
+            </div>
+            <div class="input-hint">
+                Yardımcı butonları kullanabilirsiniz. Enter veya “Kontrol Et” butonuna basarak kontrol edin.
+            </div>
+
+            <div id="feedback" class="feedback"></div>
+
+            <button type="submit" class="main-btn" id="submit-btn">Kontrol Et</button>
+            <button type="button" class="main-btn hidden" id="next-btn" onclick="goNext()" style="background:#059669; margin-top:10px;">Sonraki Soru →</button>
+        </form>
+    </div>
+
+    <!-- Sonuç Ekranı -->
+    <div id="result-screen" class="hidden">
+        <div class="results">
+            <h2>Test Tamamlandı!</h2>
+            
+            <div class="result-summary">
+                <div class="result-item">
+                    <span>Doğru Sayısı:</span>
+                    <strong id="correct-count" style="color: #27ae60;">0</strong>
+                </div>
+                <div class="result-item">
+                    <span>Yanlış Sayısı:</span>
+                    <strong id="wrong-count" style="color: #c0392b;">0</strong>
+                </div>
+            </div>
+
+            <div class="scroll-area" id="details-list"></div>
+
+            <button class="main-btn" onclick="resetTest()">Yeni Sorularla Tekrar Dene</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let questions = [];
+    let currentIndex = 0;
+    let userAnswers = [];
+    let answered = false;
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Sayıyı Türkçe formatta göster + tipini döndür
+    function formatTurkish(numStr) {
+        const hasDecimal = numStr.includes('.');
+        if (hasDecimal) {
+            const parts = numStr.split('.');
+            const intPart = parts[0];
+            const decPart = parts[1];
+            const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            return {
+                display: formattedInt + ',' + decPart,
+                isDecimal: true
+            };
+        } else {
+            return {
+                display: numStr.replace(/\B(?=(\d{3})+(?!\d))/g, '.'),
+                isDecimal: false
+            };
+        }
+    }
+
+    function getPlaceValueMap(numStr) {
+        const map = {};
+        // numStr her zaman "12345" veya "12345.67" formatında gelir (nokta = ondalık)
+        let intPart, decPart = '';
+        if (numStr.includes('.')) {
+            const parts = numStr.split('.');
+            intPart = parts[0];
+            decPart = parts[1] || '';
+        } else {
+            intPart = numStr;
+        }
+
+        // Tam kısım
+        for (let i = 0; i < intPart.length; i++) {
+            const digit = parseInt(intPart[i], 10);
+            if (digit !== 0) {
+                const power = intPart.length - 1 - i;
+                map[power] = digit;
+            }
+        }
+
+        // Ondalık kısım
+        for (let i = 0; i < decPart.length; i++) {
+            const digit = parseInt(decPart[i], 10);
+            if (digit !== 0) {
+                const power = -(i + 1);
+                map[power] = digit;
+            }
+        }
+        return map;
+    }
+
+    function mapToAnswerString(map) {
+        const powers = Object.keys(map).map(Number).sort(function(a, b) { return b - a; });
+        return powers.map(function(p) {
+            return map[p] + '×10^' + p;
+        }).join(' + ');
+    }
+
+    function parseUserAnswer(raw) {
+        if (!raw || !raw.trim()) return null;
+
+        let s = raw.trim()
+            .toLowerCase()
+            .replace(/\s+/g, '')
+            .replace(/×/g, '*')
+            .replace(/·/g, '*')
+            .replace(/x/g, '*')
+            .replace(/,/g, '.')
+            .replace(/\*\*/g, '^');
+
+        s = s.replace(/10e([+-]?\d+)/g, '10^$1');
+
+        const terms = s.split('+').filter(function(t) { return t.length > 0; });
+        const map = {};
+
+        for (let i = 0; i < terms.length; i++) {
+            const term = terms[i];
+
+            // 7*10^6  veya  7*10^-2
+            let m = term.match(/^(-?\d+(?:\.\d+)?)\*10\^(-?\d+)$/);
+            if (m) {
+                const coeff = parseFloat(m[1]);
+                const power = parseInt(m[2], 10);
+                map[power] = (map[power] || 0) + coeff;
+                continue;
+            }
+
+            // 10^6 (katsayı 1)
+            m = term.match(/^10\^(-?\d+)$/);
+            if (m) {
+                const power = parseInt(m[1], 10);
+                map[power] = (map[power] || 0) + 1;
+                continue;
+            }
+
+            // Sadece sayı → 10^0 (ama 0'ı yoksay)
+            m = term.match(/^(-?\d+(?:\.\d+)?)$/);
+            if (m) {
+                const val = parseFloat(m[1]);
+                if (val !== 0) {
+                    map[0] = (map[0] || 0) + val;
+                }
+                continue;
+            }
+
+            return null; // tanınmayan terim
+        }
+
+        // Sıfır katsayıları temizle
+        for (let p in map) {
+            if (Math.abs(map[p]) < 0.0001) delete map[p];
+        }
+        return map;
+    }
+
+    function mapsEqual(mapA, mapB) {
+        const keysA = Object.keys(mapA).map(Number).sort(function(a,b){return b-a;});
+        const keysB = Object.keys(mapB).map(Number).sort(function(a,b){return b-a;});
+        if (keysA.length !== keysB.length) return false;
+        for (let i = 0; i < keysA.length; i++) {
+            if (mapA[keysA[i]] !== mapB[keysA[i]]) return false;
+        }
+        return true;
+    }
+
+    function generateQuestions() {
+        const templates = [
+            // 1. 6-7 basamaklı tam sayı
+            function() { return String(getRandomInt(100000, 9999999)); },
+            // 2. 5 basamaklı + 2 ondalık
+            function() {
+                const int = getRandomInt(10000, 99999);
+                const dec = getRandomInt(10, 99);
+                return int + '.' + dec;
+            },
+            // 3. 4 basamaklı + 3 ondalık
+            function() {
+                const int = getRandomInt(1000, 9999);
+                const dec = getRandomInt(100, 999);
+                return int + '.' + dec;
+            },
+            // 4. 7 basamaklı tam sayı
+            function() { return String(getRandomInt(1000000, 9999999)); },
+            // 5. 3 basamaklı + 2 ondalık
+            function() {
+                const int = getRandomInt(100, 999);
+                const dec = getRandomInt(10, 99);
+                return int + '.' + dec;
+            },
+            // 6. 6 basamaklı + 1 ondalık
+            function() {
+                const int = getRandomInt(100000, 999999);
+                const dec = getRandomInt(1, 9);
+                return int + '.' + dec;
+            },
+            // 7. 5 basamaklı tam sayı
+            function() { return String(getRandomInt(10000, 99999)); },
+            // 8. 4 basamaklı + 1 ondalık
+            function() {
+                const int = getRandomInt(1000, 9999);
+                const dec = getRandomInt(1, 9);
+                return int + '.' + dec;
+            },
+            // 9. 7 basamaklı + 2 ondalık
+            function() {
+                const int = getRandomInt(1000000, 9999999);
+                const dec = getRandomInt(10, 99);
+                return int + '.' + dec;
+            },
+            // 10. 6 basamaklı tam sayı
+            function() { return String(getRandomInt(100000, 999999)); }
+        ];
+
+        return templates.map(function(gen) {
+            const numStr = gen(); // "1234567" veya "1234.56"
+            const formatted = formatTurkish(numStr);
+            const map = getPlaceValueMap(numStr);
+            return {
+                display: formatted.display,
+                isDecimal: formatted.isDecimal,
+                map: map,
+                answerStr: mapToAnswerString(map)
+            };
+        });
+    }
+
+    function shuffleArray(array) {
+        const arr = array.slice();
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+        return arr;
+    }
+
+    function insertText(text) {
+        const input = document.getElementById('answer-input');
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const value = input.value;
+        input.value = value.substring(0, start) + text + value.substring(end);
+        input.focus();
+        input.selectionStart = input.selectionEnd = start + text.length;
+    }
+
+    function startTest() {
+        questions = shuffleArray(generateQuestions());
+        currentIndex = 0;
+        userAnswers = [];
+        answered = false;
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+
+        showQuestion();
+    }
+
+    function showQuestion() {
+        answered = false;
+        const q = questions[currentIndex];
+        document.getElementById('current-q').textContent = currentIndex + 1;
+        document.getElementById('number-display').textContent = q.display;
+        document.getElementById('number-type').textContent = q.isDecimal ? 'Ondalıklı sayı' : 'Tam sayı';
+
+        const input = document.getElementById('answer-input');
+        input.value = '';
+        input.disabled = false;
+        input.focus();
+
+        const feedback = document.getElementById('feedback');
+        feedback.className = 'feedback';
+        feedback.style.display = 'none';
+        feedback.innerHTML = '';
+
+        document.getElementById('submit-btn').classList.remove('hidden');
+        document.getElementById('next-btn').classList.add('hidden');
+        document.getElementById('helper-buttons').style.display = 'flex';
+    }
+
+    function handleAnswer(e) {
+        e.preventDefault();
+        if (answered) return;
+
+        const input = document.getElementById('answer-input');
+        const rawUser = input.value.trim();
+        if (!rawUser) return;
+
+        const currentQ = questions[currentIndex];
+        const userMap = parseUserAnswer(rawUser);
+        const isCorrect = (userMap !== null) && mapsEqual(userMap, currentQ.map);
+
+        answered = true;
+        input.disabled = true;
+
+        userAnswers.push({
+            display: currentQ.display,
+            correct: currentQ.answerStr,
+            user: rawUser,
+            isCorrect: isCorrect
+        });
+
+        const feedback = document.getElementById('feedback');
+        if (isCorrect) {
+            feedback.className = 'feedback correct';
+            feedback.innerHTML = '✅ Doğru!';
+        } else {
+            feedback.className = 'feedback incorrect';
+            feedback.innerHTML = '❌ Yanlış<br><div class="correct-answer">Doğru cevap: ' + currentQ.answerStr + '</div>';
+        }
+        feedback.style.display = 'block';
+
+        document.getElementById('submit-btn').classList.add('hidden');
+        document.getElementById('next-btn').classList.remove('hidden');
+        document.getElementById('helper-buttons').style.display = 'none';
+    }
+
+    function goNext() {
+        currentIndex++;
+        if (currentIndex < questions.length) {
+            showQuestion();
+        } else {
+            finishTest();
+        }
+    }
+
+    function finishTest() {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+
+        let correct = 0;
+        let wrong = 0;
+        const detailsContainer = document.getElementById('details-list');
+        detailsContainer.innerHTML = '';
+
+        userAnswers.forEach(function(item, idx) {
+            if (item.isCorrect) correct++;
+            else wrong++;
+
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            let extra = '';
+            if (!item.isCorrect) {
+                extra = '<span style="color:#c0392b;">Doğru: ' + item.correct + '</span>';
+            }
+            div.innerHTML = '<div class="result-details"><strong>' + (idx + 1) + '. ' + item.display + '</strong><span>Sizin: ' + item.user + '</span>' + extra + '</div><span class="badge ' + (item.isCorrect ? 'correct' : 'incorrect') + '">' + (item.isCorrect ? 'Doğru' : 'Yanlış') + '</span>';
+            detailsContainer.appendChild(div);
+        });
+
+        document.getElementById('correct-count').textContent = correct;
+        document.getElementById('wrong-count').textContent = wrong;
+    }
+
+    function resetTest() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>

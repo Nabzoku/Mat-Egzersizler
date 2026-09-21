@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asal Çarpan + EBOB + EKOK</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .card { background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 580px; padding: 28px; text-align: center; }
+        h1 { color: #1e3c72; margin-bottom: 8px; font-size: 22px; }
+        p.subtitle { color: #666; font-size: 13px; margin-bottom: 18px; line-height: 1.45; }
+        .stats-bar { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 10px 16px; border-radius: 10px; margin-bottom: 16px; font-weight: 600; color: #333; font-size: 14px; }
+        .numbers-box { background: #fdfdfd; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+        .num-row { display: flex; justify-content: space-around; gap: 10px; }
+        .num-item { flex: 1; }
+        .num-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+        .num-value { font-size: 26px; font-weight: 700; color: #1e293b; }
+        .field { margin-bottom: 12px; text-align: left; }
+        .field label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 4px; }
+        .field input { width: 100%; padding: 11px; font-size: 15px; border: 2px solid #ddd; border-radius: 8px; text-align: center; outline: none; }
+        .field input:focus { border-color: #2a5298; }
+        .helper-buttons { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 12px; }
+        .helper-btn { background: #e0e7ff; color: #3730a3; border: 1px solid #a5b4fc; padding: 5px 9px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; }
+        .helper-btn:hover { background: #c7d2fe; }
+        .input-hint { font-size: 11px; color: #888; margin-bottom: 12px; text-align: left; }
+        button.main-btn { background: #2a5298; color: white; border: none; padding: 13px 24px; font-size: 15px; font-weight: 600; border-radius: 8px; cursor: pointer; width: 100%; }
+        button.main-btn:hover { background: #1e3c72; }
+        .hidden { display: none !important; }
+        .feedback { margin: 12px 0; padding: 12px; border-radius: 10px; font-weight: 600; font-size: 14px; display: none; text-align: left; }
+        .feedback.correct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block; }
+        .feedback.incorrect { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
+        .feedback .line { font-weight: 400; font-size: 12px; margin-top: 3px; }
+        .results { text-align: left; }
+        .results h2 { text-align: center; color: #1e3c72; margin-bottom: 12px; }
+        .result-summary { background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 16px; }
+        .result-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 12px; gap: 8px; }
+        .result-item:last-child { border-bottom: none; }
+        .result-details { display: flex; flex-direction: column; gap: 2px; max-width: 75%; }
+        .badge { padding: 3px 7px; border-radius: 4px; font-weight: bold; font-size: 11px; white-space: nowrap; }
+        .badge.correct { background: #d4edda; color: #155724; }
+        .badge.incorrect { background: #f8d7da; color: #721c24; }
+        .scroll-area { max-height: 240px; overflow-y: auto; margin-bottom: 16px; border: 1px solid #eee; border-radius: 8px; padding: 8px; }
+        .example-box { background: #f0f7ff; border-left: 4px solid #2a5298; padding: 10px 12px; margin: 12px 0 16px; text-align: left; font-size: 12px; color: #334155; border-radius: 0 8px 8px 0; line-height: 1.45; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div id="start-screen">
+        <h1>Asal Çarpan + EBOB + EKOK</h1>
+        <p class="subtitle">İki sayının asal çarpanlarını, EBOB ve EKOK değerlerini bulun.<br>Süre sınırı yoktur. 10 soru vardır.</p>
+        <div class="example-box">
+            <strong>Örnek:</strong> 36 ve 48 için<br>
+            36 = 2² · 3² &nbsp;&nbsp; 48 = 2⁴ · 3<br>
+            EBOB = 12 &nbsp;&nbsp; EKOK = 144<br><br>
+            Asal çarpanları <code>2^2 · 3^2</code> şeklinde yazın.
+        </div>
+        <button class="main-btn" onclick="startTest()">Testi Başlat</button>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+        <div class="stats-bar">
+            <span>Soru: <span id="current-q">1</span>/10</span>
+            <span style="color:#64748b; font-size:13px;">Süre sınırı yok</span>
+        </div>
+
+        <div class="numbers-box">
+            <div class="num-row">
+                <div class="num-item">
+                    <div class="num-label">1. Sayı</div>
+                    <div class="num-value" id="numA">-</div>
+                </div>
+                <div class="num-item">
+                    <div class="num-label">2. Sayı</div>
+                    <div class="num-value" id="numB">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="helper-buttons" id="helper-buttons">
+            <button type="button" class="helper-btn" onclick="insertText('^')">^</button>
+            <button type="button" class="helper-btn" onclick="insertText(' · ')"> · </button>
+            <button type="button" class="helper-btn" onclick="insertText('2')">2</button>
+            <button type="button" class="helper-btn" onclick="insertText('3')">3</button>
+            <button type="button" class="helper-btn" onclick="insertText('5')">5</button>
+            <button type="button" class="helper-btn" onclick="insertText('7')">7</button>
+        </div>
+
+        <form id="quiz-form" onsubmit="handleAnswer(event)">
+            <div class="field">
+                <label>1. Sayının asal çarpanları</label>
+                <input type="text" id="ansA" placeholder="Örn: 2^2 · 3^2" autocomplete="off">
+            </div>
+            <div class="field">
+                <label>2. Sayının asal çarpanları</label>
+                <input type="text" id="ansB" placeholder="Örn: 2^4 · 3" autocomplete="off">
+            </div>
+            <div class="field">
+                <label>EBOB</label>
+                <input type="text" id="ansEbob" placeholder="Örn: 12" autocomplete="off">
+            </div>
+            <div class="field">
+                <label>EKOK</label>
+                <input type="text" id="ansEkok" placeholder="Örn: 144" autocomplete="off">
+            </div>
+
+            <div class="input-hint">Asal çarpanları 2^2 · 3 şeklinde yazın. EBOB ve EKOK sadece sayı olarak.</div>
+
+            <div id="feedback" class="feedback"></div>
+
+            <button type="submit" class="main-btn" id="submit-btn">Kontrol Et</button>
+            <button type="button" class="main-btn hidden" id="next-btn" onclick="goNext()" style="background:#059669; margin-top:8px;">Sonraki Soru →</button>
+        </form>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <div class="results">
+            <h2>Test Tamamlandı!</h2>
+            <div class="result-summary">
+                <div class="result-item"><span>Doğru Sayısı:</span><strong id="correct-count" style="color:#27ae60;">0</strong></div>
+                <div class="result-item"><span>Yanlış Sayısı:</span><strong id="wrong-count" style="color:#c0392b;">0</strong></div>
+            </div>
+            <div class="scroll-area" id="details-list"></div>
+            <button class="main-btn" onclick="resetTest()">Yeni Sorularla Tekrar Dene</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let questions = [], currentIndex = 0, userAnswers = [], answered = false;
+    const SMALL_PRIMES = [2,3,5,7,11,13,17,19,23];
+
+    function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+    function factorize(n) {
+        const map = {};
+        let num = n;
+        for (let p of SMALL_PRIMES) {
+            if (p*p > num) break;
+            while (num % p === 0) { map[p] = (map[p]||0)+1; num = Math.floor(num/p); }
+        }
+        if (num > 1) map[num] = (map[num]||0)+1;
+        return map;
+    }
+
+    function mapToString(map) {
+        const primes = Object.keys(map).map(Number).sort(function(a,b){return a-b;});
+        return primes.map(function(p){ return map[p]===1 ? String(p) : p+'^'+map[p]; }).join(' · ');
+    }
+
+    function gcd(a,b){ while(b){ const t=b; b=a%b; a=t; } return a; }
+    function lcm(a,b){ return Math.abs(a*b)/gcd(a,b); }
+
+    function parseFactor(raw) {
+        if (!raw || !raw.trim()) return null;
+        let s = raw.trim().toLowerCase().replace(/\s+/g,'').replace(/×/g,'*').replace(/·/g,'*').replace(/x/g,'*')
+            .replace(/²/g,'^2').replace(/³/g,'^3').replace(/¹/g,'^1').replace(/⁴/g,'^4').replace(/\./g,'*');
+        const terms = s.split('*').filter(function(t){return t.length>0;});
+        const map = {};
+        for (let term of terms) {
+            let m = term.match(/^(\d+)\^(\d+)$/);
+            if (m) { map[parseInt(m[1])] = (map[parseInt(m[1])]||0) + parseInt(m[2]); continue; }
+            m = term.match(/^(\d+)$/);
+            if (m) { const p=parseInt(m[1]); if(p<2) return null; map[p]=(map[p]||0)+1; continue; }
+            return null;
+        }
+        return map;
+    }
+
+    function mapsEqual(a,b) {
+        if (!a || !b) return false;
+        const ka = Object.keys(a).map(Number).sort(function(x,y){return x-y;});
+        const kb = Object.keys(b).map(Number).sort(function(x,y){return x-y;});
+        if (ka.length !== kb.length) return false;
+        for (let i=0;i<ka.length;i++) if (a[ka[i]] !== b[ka[i]]) return false;
+        return true;
+    }
+
+    function generatePair() {
+        // Çok daha kolay sayılar: sadece 2,3,5,7,11  + düşük üsler
+        const easyPrimes = [2,3,5,7,11];
+        const common = [];
+        const cCount = getRandomInt(1,2);
+        while (common.length < cCount) {
+            const p = easyPrimes[getRandomInt(0, easyPrimes.length-1)];
+            if (common.indexOf(p)===-1) common.push(p);
+        }
+        let a=1, b=1;
+        const mapA={}, mapB={};
+        common.forEach(function(p){
+            const eA = getRandomInt(1,2);   // üs max 2
+            const eB = getRandomInt(1,2);
+            mapA[p]=eA; mapB[p]=eB;
+            a *= Math.pow(p,eA); b *= Math.pow(p,eB);
+        });
+        // Her birine en fazla 1 ekstra asal (üs 1)
+        const extraA = easyPrimes[getRandomInt(0, easyPrimes.length-1)];
+        if (!mapA[extraA]) { mapA[extraA]=1; a*=extraA; }
+        const extraB = easyPrimes[getRandomInt(0, easyPrimes.length-1)];
+        if (!mapB[extraB]) { mapB[extraB]=1; b*=extraB; }
+
+        // 20-400 arası kalsın, aynı olmasın
+        if (a>400 || b>400 || a===b || a<20 || b<20) return generatePair();
+        return { a:a, b:b, mapA:mapA, mapB:mapB, ebob:gcd(a,b), ekok:lcm(a,b) };
+    }
+
+    function generateQuestions() {
+        const qs=[], seen={};
+        while (qs.length<10) {
+            const g = generatePair();
+            const key = Math.min(g.a,g.b)+'-'+Math.max(g.a,g.b);
+            if (seen[key]) continue;
+            seen[key]=true;
+            qs.push({
+                a: g.a, b: g.b,
+                mapA: g.mapA, mapB: g.mapB,
+                strA: mapToString(g.mapA), strB: mapToString(g.mapB),
+                ebob: g.ebob, ekok: g.ekok
+            });
+        }
+        return qs;
+    }
+
+    function shuffleArray(arr) {
+        const a=arr.slice();
+        for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; }
+        return a;
+    }
+
+    function insertText(text) {
+        const active = document.activeElement;
+        if (active && active.tagName==='INPUT') {
+            const start=active.selectionStart, end=active.selectionEnd, val=active.value;
+            active.value = val.substring(0,start)+text+val.substring(end);
+            active.focus();
+            active.selectionStart = active.selectionEnd = start+text.length;
+        }
+    }
+
+    function startTest() {
+        questions = shuffleArray(generateQuestions());
+        currentIndex=0; userAnswers=[]; answered=false;
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        showQuestion();
+    }
+
+    function showQuestion() {
+        answered=false;
+        const q = questions[currentIndex];
+        document.getElementById('current-q').textContent = currentIndex+1;
+        document.getElementById('numA').textContent = q.a.toLocaleString('tr-TR');
+        document.getElementById('numB').textContent = q.b.toLocaleString('tr-TR');
+
+        ['ansA','ansB','ansEbob','ansEkok'].forEach(function(id){
+            const el=document.getElementById(id);
+            el.value=''; el.disabled=false;
+        });
+        document.getElementById('ansA').focus();
+
+        const fb=document.getElementById('feedback');
+        fb.className='feedback'; fb.style.display='none'; fb.innerHTML='';
+        document.getElementById('submit-btn').classList.remove('hidden');
+        document.getElementById('next-btn').classList.add('hidden');
+        document.getElementById('helper-buttons').style.display='flex';
+    }
+
+    function handleAnswer(e) {
+        e.preventDefault();
+        if (answered) return;
+
+        const q = questions[currentIndex];
+        const rawA = document.getElementById('ansA').value.trim();
+        const rawB = document.getElementById('ansB').value.trim();
+        const rawEbob = document.getElementById('ansEbob').value.trim().replace(/\./g,'').replace(',','.');
+        const rawEkok = document.getElementById('ansEkok').value.trim().replace(/\./g,'').replace(',','.');
+
+        const userMapA = parseFactor(rawA);
+        const userMapB = parseFactor(rawB);
+        const userEbob = parseInt(rawEbob,10);
+        const userEkok = parseInt(rawEkok,10);
+
+        const okA = mapsEqual(userMapA, q.mapA);
+        const okB = mapsEqual(userMapB, q.mapB);
+        const okEbob = !isNaN(userEbob) && userEbob === q.ebob;
+        const okEkok = !isNaN(userEkok) && userEkok === q.ekok;
+        const allOk = okA && okB && okEbob && okEkok;
+
+        answered = true;
+        ['ansA','ansB','ansEbob','ansEkok'].forEach(function(id){ document.getElementById(id).disabled=true; });
+
+        userAnswers.push({
+            a: q.a, b: q.b,
+            userA: rawA, userB: rawB, userEbob: rawEbob, userEkok: rawEkok,
+            correctA: q.strA, correctB: q.strB, correctEbob: q.ebob, correctEkok: q.ekok,
+            okA:okA, okB:okB, okEbob:okEbob, okEkok:okEkok, allOk:allOk
+        });
+
+        const fb = document.getElementById('feedback');
+        if (allOk) {
+            fb.className = 'feedback correct';
+            fb.innerHTML = '✅ Hepsi doğru!';
+        } else {
+            fb.className = 'feedback incorrect';
+            let html = '❌ Bazı hatalar var:<br>';
+            if (!okA) html += '<div class="line">1. Sayı doğru: ' + q.strA + '</div>';
+            if (!okB) html += '<div class="line">2. Sayı doğru: ' + q.strB + '</div>';
+            if (!okEbob) html += '<div class="line">EBOB doğru: ' + q.ebob + '</div>';
+            if (!okEkok) html += '<div class="line">EKOK doğru: ' + q.ekok + '</div>';
+            fb.innerHTML = html;
+        }
+        fb.style.display = 'block';
+
+        document.getElementById('submit-btn').classList.add('hidden');
+        document.getElementById('next-btn').classList.remove('hidden');
+        document.getElementById('helper-buttons').style.display = 'none';
+    }
+
+    function goNext() {
+        currentIndex++;
+        if (currentIndex < questions.length) showQuestion();
+        else finishTest();
+    }
+
+    function finishTest() {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        let correct=0, wrong=0;
+        const container = document.getElementById('details-list');
+        container.innerHTML = '';
+        userAnswers.forEach(function(item, idx) {
+            if (item.allOk) correct++; else wrong++;
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            let extra = '';
+            if (!item.allOk) {
+                extra = '<span style="color:#c0392b;font-size:11px;">Doğru: ' + item.correctA + ' | ' + item.correctB + ' | EBOB '+item.correctEbob+' | EKOK '+item.correctEkok+'</span>';
+            }
+            div.innerHTML = '<div class="result-details"><strong>'+(idx+1)+'. '+item.a+' ve '+item.b+'</strong><span>Sizin: '+item.userA+' | '+item.userB+' | '+item.userEbob+' | '+item.userEkok+'</span>'+extra+'</div><span class="badge '+(item.allOk?'correct':'incorrect')+'">'+(item.allOk?'Doğru':'Yanlış')+'</span>';
+            container.appendChild(div);
+        });
+        document.getElementById('correct-count').textContent = correct;
+        document.getElementById('wrong-count').textContent = wrong;
+    }
+
+    function resetTest() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+</script>
+</body>
+</html>
