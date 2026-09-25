@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Özdeşlikler – Uygulama</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 16px; }
+        .wrapper { display: flex; gap: 16px; max-width: 960px; width: 100%; flex-wrap: wrap; }
+        .formulas-panel {
+            background: white; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+            padding: 16px 18px; width: 100%; max-width: 320px; flex-shrink: 0;
+        }
+        .formulas-panel h2 { color: #1e3c72; font-size: 15px; margin-bottom: 10px; text-align: center; }
+        .formula-item {
+            background: #f8fafc; border-left: 4px solid #2a5298; padding: 7px 9px;
+            margin-bottom: 7px; border-radius: 0 8px 8px 0; font-size: 12px; line-height: 1.4; color: #1e293b;
+        }
+        .formula-item strong { color: #1e3c72; display: block; margin-bottom: 1px; font-size: 11px; }
+        .formula-item code { font-family: Consolas, monospace; font-size: 11.5px; }
+        .card {
+            background: white; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+            flex: 1; min-width: 300px; padding: 24px; text-align: center;
+        }
+        h1 { color: #1e3c72; margin-bottom: 6px; font-size: 20px; }
+        p.subtitle { color: #666; font-size: 13px; margin-bottom: 14px; line-height: 1.4; }
+        .stats-bar { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 10px 14px; border-radius: 10px; margin-bottom: 14px; font-weight: 600; color: #333; font-size: 14px; }
+        .question-box { background: #fdfdfd; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 22px 12px; margin-bottom: 12px; min-height: 70px; display: flex; justify-content: center; align-items: center; font-size: 22px; font-weight: 700; color: #1e293b; }
+        .type-badge { display: inline-block; background: #e0e7ff; color: #3730a3; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-bottom: 8px; }
+        .input-group { margin-bottom: 8px; }
+        input[type="text"] { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; text-align: center; outline: none; }
+        input[type="text"]:focus { border-color: #2a5298; }
+        .helper-buttons { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 10px; }
+        .helper-btn { background: #e0e7ff; color: #3730a3; border: 1px solid #a5b4fc; padding: 5px 9px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; }
+        .helper-btn:hover { background: #c7d2fe; }
+        .input-hint { font-size: 11px; color: #888; margin-bottom: 12px; text-align: left; }
+        button.main-btn { background: #2a5298; color: white; border: none; padding: 12px 22px; font-size: 15px; font-weight: 600; border-radius: 8px; cursor: pointer; width: 100%; }
+        button.main-btn:hover { background: #1e3c72; }
+        .hidden { display: none !important; }
+        .feedback { margin: 10px 0; padding: 11px; border-radius: 10px; font-weight: 600; font-size: 14px; display: none; text-align: left; }
+        .feedback.correct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block; }
+        .feedback.incorrect { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
+        .feedback .line { font-weight: 400; font-size: 13px; margin-top: 3px; word-break: break-all; }
+        .results { text-align: left; }
+        .results h2 { text-align: center; color: #1e3c72; margin-bottom: 10px; }
+        .result-summary { background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 12px; }
+        .result-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid #eee; font-size: 12px; gap: 8px; }
+        .result-item:last-child { border-bottom: none; }
+        .result-details { display: flex; flex-direction: column; gap: 2px; max-width: 75%; }
+        .badge { padding: 3px 7px; border-radius: 4px; font-weight: bold; font-size: 11px; white-space: nowrap; }
+        .badge.correct { background: #d4edda; color: #155724; }
+        .badge.incorrect { background: #f8d7da; color: #721c24; }
+        .scroll-area { max-height: 220px; overflow-y: auto; margin-bottom: 12px; border: 1px solid #eee; border-radius: 8px; padding: 8px; }
+        .example-box { background: #f0f7ff; border-left: 4px solid #2a5298; padding: 10px 12px; margin: 10px 0 14px; text-align: left; font-size: 12px; color: #334155; border-radius: 0 8px 8px 0; line-height: 1.4; }
+        @media (max-width: 700px) { .formulas-panel { max-width: 100%; order: 2; } .card { order: 1; } }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="formulas-panel">
+        <h2>📋 Özdeşlik Şablonları</h2>
+        <div class="formula-item"><strong>1. İki Kare Farkı</strong><code>x² − y² = (x − y)(x + y)</code></div>
+        <div class="formula-item"><strong>2. Tam Kare</strong><code>(x ± y)² = x² ± 2xy + y²</code></div>
+        <div class="formula-item"><strong>3. İki Küp</strong><code>x³ ± y³ = (x ± y)(x² ∓ xy + y²)</code></div>
+        <div class="formula-item"><strong>4. Parantez Küpü</strong><code>(x ± y)³ = x³ ± 3x²y + 3xy² ± y³</code></div>
+        <div class="formula-item"><strong>5. 4. Derece Fark</strong><code>x⁴ − y⁴ = (x − y)(x³ + … + y³)</code></div>
+        <div class="formula-item"><strong>6. 5. Derece Fark</strong><code>x⁵ − y⁵ = (x − y)(x⁴ + … + y⁴)</code></div>
+        <div class="formula-item"><strong>7. 6. Derece Fark</strong><code>x⁶ − y⁶ = (x − y)(x⁵ + … + y⁵)</code></div>
+    </div>
+
+    <div class="card">
+        <div id="start-screen">
+            <h1>Özdeşlikler – Uygulama</h1>
+            <p class="subtitle">Sayısal ifadeleri açın veya çarpanlara ayırın.<br>Süre sınırı yoktur. 12 soru vardır.</p>
+            <div class="example-box">
+                (x + 3)² → <code>x² + 6x + 9</code><br>
+                x² − 25 → <code>(x − 5)(x + 5)</code>
+            </div>
+            <button class="main-btn" onclick="startTest()">Testi Başlat</button>
+        </div>
+
+        <div id="quiz-screen" class="hidden">
+            <div class="stats-bar">
+                <span>Soru: <span id="current-q">1</span>/12</span>
+                <span style="color:#64748b; font-size:13px;">Süre sınırı yok</span>
+            </div>
+            <div class="type-badge" id="type-badge">-</div>
+            <div class="question-box" id="question-box">-</div>
+            <div class="helper-buttons" id="helper-buttons">
+                <button type="button" class="helper-btn" onclick="insertText('x^2')">x²</button>
+                <button type="button" class="helper-btn" onclick="insertText('x^3')">x³</button>
+                <button type="button" class="helper-btn" onclick="insertText('(')">(</button>
+                <button type="button" class="helper-btn" onclick="insertText(')')">)</button>
+                <button type="button" class="helper-btn" onclick="insertText('+')">+</button>
+                <button type="button" class="helper-btn" onclick="insertText('-')">−</button>
+            </div>
+            <form id="quiz-form" onsubmit="handleAnswer(event)">
+                <div class="input-group">
+                    <input type="text" id="answer-input" placeholder="Cevabınız..." required autocomplete="off">
+                </div>
+                <div class="input-hint">Çarpan sırası önemli değil.</div>
+                <div id="feedback" class="feedback"></div>
+                <button type="submit" class="main-btn" id="submit-btn">Kontrol Et</button>
+                <button type="button" class="main-btn hidden" id="next-btn" onclick="goNext()" style="background:#059669; margin-top:8px;">Sonraki Soru →</button>
+            </form>
+        </div>
+
+        <div id="result-screen" class="hidden">
+            <div class="results">
+                <h2>Test Tamamlandı!</h2>
+                <div class="result-summary">
+                    <div class="result-item"><span>Doğru:</span><strong id="correct-count" style="color:#27ae60;">0</strong></div>
+                    <div class="result-item"><span>Yanlış:</span><strong id="wrong-count" style="color:#c0392b;">0</strong></div>
+                </div>
+                <div class="scroll-area" id="details-list"></div>
+                <button class="main-btn" onclick="resetTest()">Yeni Sorularla Tekrar Dene</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let questions = [], currentIndex = 0, userAnswers = [], answered = false;
+    function rnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+
+    function normalize(str) {
+        if (!str) return '';
+        return str.trim().toLowerCase().replace(/\s+/g,'').replace(/×/g,'*').replace(/·/g,'*')
+            .replace(/²/g,'^2').replace(/³/g,'^3').replace(/⁴/g,'^4').replace(/⁵/g,'^5').replace(/⁶/g,'^6')
+            .replace(/−/g,'-').replace(/–/g,'-');
+    }
+    function normalizeFactors(str) {
+        let s = normalize(str);
+        const factors = [];
+        const re = /\(([^)]+)\)/g; let m;
+        while ((m = re.exec(s)) !== null) factors.push(m[1]);
+        if (factors.length >= 2) { factors.sort(); return factors.map(f=>'('+f+')').join(''); }
+        return s;
+    }
+
+    function expandPS(a,b,sign) {
+        const A=a*a, B=sign*2*a*b, C=b*b;
+        let p=[];
+        p.push(A===1?'x^2':A+'x^2');
+        if(B) p.push((B>0?'+':'')+(B===1?'x':B===-1?'-x':B+'x'));
+        if(C) p.push((C>0?'+':'')+C);
+        let s=p.join(''); if(s[0]==='+')s=s.slice(1); return s;
+    }
+    function expandCube(a,b,sign) {
+        const A=a*a*a, B=sign*3*a*a*b, C=3*a*b*b, D=sign*b*b*b;
+        let p=[];
+        p.push(A===1?'x^3':A===-1?'-x^3':A+'x^3');
+        if(B) p.push((B>0?'+':'')+(Math.abs(B)===1?(B>0?'x^2':'-x^2'):B+'x^2'));
+        if(C) p.push((C>0?'+':'')+(C===1?'x':C===-1?'-x':C+'x'));
+        if(D) p.push((D>0?'+':'')+D);
+        let s=p.join(''); if(s[0]==='+')s=s.slice(1); return s;
+    }
+
+    function generateQuestions() {
+        const qs = [];
+        // 1. İki kare farkı
+        { const y=rnd(2,9); qs.push({type:'İki Kare Farkı', display:'x² − '+(y*y)+' =', answer:'(x-'+y+')(x+'+y+')', check:'factors'}); }
+        { const a=rnd(2,4), y=rnd(2,5); qs.push({type:'İki Kare Farkı', display:(a*a)+'x² − '+(y*y)+' =', answer:'('+a+'x-'+y+')('+a+'x+'+y+')', check:'factors'}); }
+
+        // 2. Tam kare + ve −
+        { const b=rnd(2,8); qs.push({type:'Tam Kare (+)', display:'(x + '+b+')² =', answer:expandPS(1,b,1), check:'expand'}); }
+        { const b=rnd(2,7); qs.push({type:'Tam Kare (−)', display:'(x − '+b+')² =', answer:expandPS(1,b,-1), check:'expand'}); }
+        { const a=rnd(2,4), b=rnd(1,5), s=Math.random()<0.5?1:-1; qs.push({type:'Tam Kare', display:'('+a+'x'+(s>0?' + ':' − ')+b+')² =', answer:expandPS(a,b,s), check:'expand'}); }
+
+        // 3. İki küp
+        { const y=rnd(2,5); qs.push({type:'İki Küp Farkı', display:'x³ − '+(y*y*y)+' =', answer:'(x-'+y+')(x^2+'+y+'x+'+(y*y)+')', check:'factors'}); }
+        { const y=rnd(2,4); qs.push({type:'İki Küp Toplamı', display:'x³ + '+(y*y*y)+' =', answer:'(x+'+y+')(x^2-'+y+'x+'+(y*y)+')', check:'factors'}); }
+
+        // 4. Parantez küpü
+        { const b=rnd(1,4); qs.push({type:'Parantez Küpü (+)', display:'(x + '+b+')³ =', answer:expandCube(1,b,1), check:'expand'}); }
+        { const b=rnd(1,4); qs.push({type:'Parantez Küpü (−)', display:'(x − '+b+')³ =', answer:expandCube(1,b,-1), check:'expand'}); }
+
+        // 5-7. Yüksek derece
+        { const y=rnd(2,3); qs.push({type:'4. Derece Fark', display:'x⁴ − '+(y**4)+' =', answer:'(x-'+y+')(x^3+'+y+'x^2+'+(y*y)+'x+'+(y**3)+')', check:'factors'}); }
+        { qs.push({type:'5. Derece Fark', display:'x⁵ − 32 =', answer:'(x-2)(x^4+2x^3+4x^2+8x+16)', check:'factors'}); }
+        { qs.push({type:'6. Derece Fark', display:'x⁶ − 64 =', answer:'(x-2)(x^5+2x^4+4x^3+8x^2+16x+32)', check:'factors'}); }
+
+        return qs;
+    }
+
+    function checkAnswer(userRaw, q) {
+        const user = normalize(userRaw);
+        if (q.check === 'expand') return user === normalize(q.answer);
+        const uf = normalizeFactors(userRaw);
+        const cf = normalizeFactors(q.answer);
+        return (uf && cf && uf === cf) || user === normalize(q.answer);
+    }
+
+    function startTest() {
+        questions = generateQuestions();
+        for (let i=questions.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [questions[i],questions[j]]=[questions[j],questions[i]]; }
+        currentIndex=0; userAnswers=[]; answered=false;
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        showQuestion();
+    }
+    function showQuestion() {
+        answered=false;
+        const q=questions[currentIndex];
+        document.getElementById('current-q').textContent=currentIndex+1;
+        document.getElementById('type-badge').textContent=q.type;
+        document.getElementById('question-box').textContent=q.display;
+        const input=document.getElementById('answer-input');
+        input.value=''; input.disabled=false; input.focus();
+        const fb=document.getElementById('feedback');
+        fb.className='feedback'; fb.style.display='none'; fb.innerHTML='';
+        document.getElementById('submit-btn').classList.remove('hidden');
+        document.getElementById('next-btn').classList.add('hidden');
+        document.getElementById('helper-buttons').style.display='flex';
+    }
+    function handleAnswer(e) {
+        e.preventDefault(); if(answered) return;
+        const raw=document.getElementById('answer-input').value.trim(); if(!raw) return;
+        const q=questions[currentIndex];
+        const isCorrect=checkAnswer(raw,q);
+        answered=true; document.getElementById('answer-input').disabled=true;
+        userAnswers.push({display:q.display, type:q.type, user:raw, correct:q.answer, isCorrect});
+        const fb=document.getElementById('feedback');
+        if(isCorrect){ fb.className='feedback correct'; fb.innerHTML='✅ Doğru!'; }
+        else { fb.className='feedback incorrect'; fb.innerHTML='❌ Yanlış<br><div class="line">Doğru cevap: '+q.answer+'</div>'; }
+        fb.style.display='block';
+        document.getElementById('submit-btn').classList.add('hidden');
+        document.getElementById('next-btn').classList.remove('hidden');
+        document.getElementById('helper-buttons').style.display='none';
+    }
+    function goNext(){ currentIndex++; if(currentIndex<questions.length) showQuestion(); else finishTest(); }
+    function finishTest(){
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        let correct=0,wrong=0; const c=document.getElementById('details-list'); c.innerHTML='';
+        userAnswers.forEach((item,idx)=>{
+            if(item.isCorrect) correct++; else wrong++;
+            const div=document.createElement('div'); div.className='result-item';
+            let extra=item.isCorrect?'':'<span style="color:#c0392b;">Doğru: '+item.correct+'</span>';
+            div.innerHTML='<div class="result-details"><strong>'+(idx+1)+'. '+item.display+'</strong><span style="font-size:11px;color:#64748b;">'+item.type+'</span><span>Sizin: '+item.user+'</span>'+extra+'</div><span class="badge '+(item.isCorrect?'correct':'incorrect')+'">'+(item.isCorrect?'Doğru':'Yanlış')+'</span>';
+            c.appendChild(div);
+        });
+        document.getElementById('correct-count').textContent=correct;
+        document.getElementById('wrong-count').textContent=wrong;
+    }
+    function resetTest(){ document.getElementById('result-screen').classList.add('hidden'); document.getElementById('start-screen').classList.remove('hidden'); }
+    function insertText(t){ const i=document.getElementById('answer-input'); const s=i.selectionStart,e=i.selectionEnd,v=i.value; i.value=v.substring(0,s)+t+v.substring(e); i.focus(); i.selectionStart=i.selectionEnd=s+t.length; }
+</script>
+</body>
+</html>

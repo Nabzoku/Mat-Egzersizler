@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Özdeşlikler – Formüller</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .card { background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 560px; padding: 28px; text-align: center; }
+        h1 { color: #1e3c72; margin-bottom: 8px; font-size: 22px; }
+        p.subtitle { color: #666; font-size: 13px; margin-bottom: 16px; line-height: 1.45; }
+        .stats-bar { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 10px 16px; border-radius: 10px; margin-bottom: 16px; font-weight: 600; color: #333; font-size: 14px; }
+        .question-box { background: #fdfdfd; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 24px 14px; margin-bottom: 14px; min-height: 80px; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: 700; color: #1e293b; }
+        .input-group { margin-bottom: 8px; }
+        input[type="text"] { width: 100%; padding: 13px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; text-align: center; outline: none; }
+        input[type="text"]:focus { border-color: #2a5298; }
+        .helper-buttons { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 10px; }
+        .helper-btn { background: #e0e7ff; color: #3730a3; border: 1px solid #a5b4fc; padding: 5px 9px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; }
+        .helper-btn:hover { background: #c7d2fe; }
+        .input-hint { font-size: 11px; color: #888; margin-bottom: 12px; text-align: left; }
+        button.main-btn { background: #2a5298; color: white; border: none; padding: 13px 24px; font-size: 15px; font-weight: 600; border-radius: 8px; cursor: pointer; width: 100%; }
+        button.main-btn:hover { background: #1e3c72; }
+        .hidden { display: none !important; }
+        .feedback { margin: 12px 0; padding: 12px; border-radius: 10px; font-weight: 600; font-size: 14px; display: none; text-align: left; }
+        .feedback.correct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block; }
+        .feedback.incorrect { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
+        .feedback .line { font-weight: 400; font-size: 13px; margin-top: 4px; word-break: break-all; }
+        .results { text-align: left; }
+        .results h2 { text-align: center; color: #1e3c72; margin-bottom: 12px; }
+        .result-summary { background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 14px; }
+        .result-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 12px; gap: 8px; }
+        .result-item:last-child { border-bottom: none; }
+        .result-details { display: flex; flex-direction: column; gap: 2px; max-width: 75%; }
+        .badge { padding: 3px 7px; border-radius: 4px; font-weight: bold; font-size: 11px; white-space: nowrap; }
+        .badge.correct { background: #d4edda; color: #155724; }
+        .badge.incorrect { background: #f8d7da; color: #721c24; }
+        .scroll-area { max-height: 230px; overflow-y: auto; margin-bottom: 14px; border: 1px solid #eee; border-radius: 8px; padding: 8px; }
+        .example-box { background: #f0f7ff; border-left: 4px solid #2a5298; padding: 10px 12px; margin: 12px 0 16px; text-align: left; font-size: 12px; color: #334155; border-radius: 0 8px 8px 0; line-height: 1.45; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div id="start-screen">
+        <h1>Özdeşlikler – Formüller</h1>
+        <p class="subtitle">Saf özdeşlik formüllerini yazın.<br>Süre sınırı yoktur. 12 soru vardır.</p>
+        <div class="example-box">
+            <strong>Örnek:</strong> x³ + y³ =<br>
+            Cevap: <code>(x+y)(x^2-xy+y^2)</code><br><br>
+            Parantez sırası önemli değil. ± işaretlerine dikkat edin.
+        </div>
+        <button class="main-btn" onclick="startTest()">Testi Başlat</button>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+        <div class="stats-bar">
+            <span>Soru: <span id="current-q">1</span>/12</span>
+            <span style="color:#64748b; font-size:13px;">Süre sınırı yok</span>
+        </div>
+        <div class="question-box" id="question-box">-</div>
+
+        <div class="helper-buttons" id="helper-buttons">
+            <button type="button" class="helper-btn" onclick="insertText('x')">x</button>
+            <button type="button" class="helper-btn" onclick="insertText('y')">y</button>
+            <button type="button" class="helper-btn" onclick="insertText('^2')">²</button>
+            <button type="button" class="helper-btn" onclick="insertText('^3')">³</button>
+            <button type="button" class="helper-btn" onclick="insertText('(')">(</button>
+            <button type="button" class="helper-btn" onclick="insertText(')')">)</button>
+            <button type="button" class="helper-btn" onclick="insertText('+')">+</button>
+            <button type="button" class="helper-btn" onclick="insertText('-')">−</button>
+        </div>
+
+        <form id="quiz-form" onsubmit="handleAnswer(event)">
+            <div class="input-group">
+                <input type="text" id="answer-input" placeholder="Formülü yazın..." required autocomplete="off">
+            </div>
+            <div class="input-hint">Örn: (x+y)(x^2-xy+y^2) &nbsp;|&nbsp; x^2+2xy+y^2</div>
+            <div id="feedback" class="feedback"></div>
+            <button type="submit" class="main-btn" id="submit-btn">Kontrol Et</button>
+            <button type="button" class="main-btn hidden" id="next-btn" onclick="goNext()" style="background:#059669; margin-top:8px;">Sonraki Soru →</button>
+        </form>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <div class="results">
+            <h2>Test Tamamlandı!</h2>
+            <div class="result-summary">
+                <div class="result-item"><span>Doğru:</span><strong id="correct-count" style="color:#27ae60;">0</strong></div>
+                <div class="result-item"><span>Yanlış:</span><strong id="wrong-count" style="color:#c0392b;">0</strong></div>
+            </div>
+            <div class="scroll-area" id="details-list"></div>
+            <button class="main-btn" onclick="resetTest()">Yeni Sorularla Tekrar Dene</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let questions = [], currentIndex = 0, userAnswers = [], answered = false;
+
+    function normalize(str) {
+        if (!str) return '';
+        return str.trim().toLowerCase()
+            .replace(/\s+/g, '')
+            .replace(/×/g,'*').replace(/·/g,'*')
+            .replace(/²/g,'^2').replace(/³/g,'^3').replace(/⁴/g,'^4').replace(/⁵/g,'^5').replace(/⁶/g,'^6')
+            .replace(/−/g,'-').replace(/–/g,'-')
+            .replace(/\+\+/g,'+').replace(/\+-/g,'-').replace(/-\+/g,'-').replace(/--/g,'+');
+    }
+
+    // Çarpan sırasını önemsiz yap
+    function normalizeFactors(str) {
+        let s = normalize(str);
+        const factors = [];
+        const re = /\(([^)]+)\)/g;
+        let m;
+        while ((m = re.exec(s)) !== null) factors.push(m[1]);
+        if (factors.length >= 2) {
+            factors.sort();
+            return factors.map(f => '(' + f + ')').join('');
+        }
+        return s;
+    }
+
+    const FORMULAS = [
+        {
+            display: 'x² − y² =',
+            answers: ['(x-y)(x+y)', '(x+y)(x-y)'],
+            type: 'factors'
+        },
+        {
+            display: '(x + y)² =',
+            answers: ['x^2+2xy+y^2', 'x^2+y^2+2xy'],
+            type: 'expand'
+        },
+        {
+            display: '(x − y)² =',
+            answers: ['x^2-2xy+y^2', 'x^2+y^2-2xy'],
+            type: 'expand'
+        },
+        {
+            display: 'x³ − y³ =',
+            answers: ['(x-y)(x^2+xy+y^2)', '(x-y)(x^2+y^2+xy)'],
+            type: 'factors'
+        },
+        {
+            display: 'x³ + y³ =',
+            answers: ['(x+y)(x^2-xy+y^2)', '(x+y)(x^2+y^2-xy)'],
+            type: 'factors'
+        },
+        {
+            display: '(x + y)³ =',
+            answers: ['x^3+3x^2y+3xy^2+y^3', 'x^3+y^3+3x^2y+3xy^2'],
+            type: 'expand'
+        },
+        {
+            display: '(x − y)³ =',
+            answers: ['x^3-3x^2y+3xy^2-y^3', 'x^3-y^3-3x^2y+3xy^2'],
+            type: 'expand'
+        },
+        {
+            display: 'x⁴ − y⁴ =',
+            answers: ['(x-y)(x^3+x^2y+xy^2+y^3)', '(x-y)(x^3+y^3+x^2y+xy^2)'],
+            type: 'factors'
+        },
+        {
+            display: 'x⁵ − y⁵ =',
+            answers: ['(x-y)(x^4+x^3y+x^2y^2+xy^3+y^4)'],
+            type: 'factors'
+        },
+        {
+            display: 'x⁶ − y⁶ =',
+            answers: ['(x-y)(x^5+x^4y+x^3y^2+x^2y^3+xy^4+y^5)'],
+            type: 'factors'
+        },
+        // ekstra varyasyonlar
+        {
+            display: '(x + y)(x − y) =',
+            answers: ['x^2-y^2'],
+            type: 'expand'
+        },
+        {
+            display: '(x + y)(x² − xy + y²) =',
+            answers: ['x^3+y^3'],
+            type: 'expand'
+        }
+    ];
+
+    function checkAnswer(userRaw, q) {
+        const userN = normalize(userRaw);
+        const userF = normalizeFactors(userRaw);
+
+        for (let ans of q.answers) {
+            if (normalize(ans) === userN) return true;
+            if (q.type === 'factors' && normalizeFactors(ans) === userF) return true;
+        }
+        return false;
+    }
+
+    function startTest() {
+        questions = FORMULAS.slice();
+        for (let i = questions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [questions[i], questions[j]] = [questions[j], questions[i]];
+        }
+        currentIndex = 0; userAnswers = []; answered = false;
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        showQuestion();
+    }
+
+    function showQuestion() {
+        answered = false;
+        const q = questions[currentIndex];
+        document.getElementById('current-q').textContent = currentIndex + 1;
+        document.getElementById('question-box').textContent = q.display;
+
+        const input = document.getElementById('answer-input');
+        input.value = ''; input.disabled = false; input.focus();
+
+        const fb = document.getElementById('feedback');
+        fb.className = 'feedback'; fb.style.display = 'none'; fb.innerHTML = '';
+        document.getElementById('submit-btn').classList.remove('hidden');
+        document.getElementById('next-btn').classList.add('hidden');
+        document.getElementById('helper-buttons').style.display = 'flex';
+    }
+
+    function handleAnswer(e) {
+        e.preventDefault();
+        if (answered) return;
+        const raw = document.getElementById('answer-input').value.trim();
+        if (!raw) return;
+
+        const q = questions[currentIndex];
+        const isCorrect = checkAnswer(raw, q);
+
+        answered = true;
+        document.getElementById('answer-input').disabled = true;
+
+        userAnswers.push({
+            display: q.display,
+            user: raw,
+            correct: q.answers[0],
+            isCorrect: isCorrect
+        });
+
+        const fb = document.getElementById('feedback');
+        if (isCorrect) {
+            fb.className = 'feedback correct';
+            fb.innerHTML = '✅ Doğru!';
+        } else {
+            fb.className = 'feedback incorrect';
+            fb.innerHTML = '❌ Yanlış<br><div class="line">Doğru cevap: ' + q.answers[0] + '</div>';
+        }
+        fb.style.display = 'block';
+        document.getElementById('submit-btn').classList.add('hidden');
+        document.getElementById('next-btn').classList.remove('hidden');
+        document.getElementById('helper-buttons').style.display = 'none';
+    }
+
+    function goNext() {
+        currentIndex++;
+        if (currentIndex < questions.length) showQuestion();
+        else finishTest();
+    }
+
+    function finishTest() {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        let correct = 0, wrong = 0;
+        const container = document.getElementById('details-list');
+        container.innerHTML = '';
+        userAnswers.forEach(function(item, idx) {
+            if (item.isCorrect) correct++; else wrong++;
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            let extra = item.isCorrect ? '' : '<span style="color:#c0392b;">Doğru: ' + item.correct + '</span>';
+            div.innerHTML = '<div class="result-details"><strong>' + (idx+1) + '. ' + item.display + '</strong><span>Sizin: ' + item.user + '</span>' + extra + '</div><span class="badge ' + (item.isCorrect ? 'correct' : 'incorrect') + '">' + (item.isCorrect ? 'Doğru' : 'Yanlış') + '</span>';
+            container.appendChild(div);
+        });
+        document.getElementById('correct-count').textContent = correct;
+        document.getElementById('wrong-count').textContent = wrong;
+    }
+
+    function resetTest() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+
+    function insertText(text) {
+        const input = document.getElementById('answer-input');
+        const start = input.selectionStart, end = input.selectionEnd, val = input.value;
+        input.value = val.substring(0, start) + text + val.substring(end);
+        input.focus();
+        input.selectionStart = input.selectionEnd = start + text.length;
+    }
+</script>
+</body>
+</html>
