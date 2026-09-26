@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kümeler Egzersizleri</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}
+body{background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%);min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:16px}
+.card{background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.2);width:100%;max-width:640px;padding:24px}
+h1{color:#1e3c72;font-size:22px;text-align:center;margin-bottom:6px}
+.subtitle{color:#666;font-size:13px;text-align:center;margin-bottom:14px;line-height:1.4}
+.stats-bar{display:flex;justify-content:space-between;align-items:center;background:#f8f9fa;padding:10px 16px;border-radius:10px;margin-bottom:12px;font-weight:600;font-size:14px;color:#333}
+.venn-wrap{display:flex;justify-content:center;margin:10px 0 14px;background:#f8fafc;border-radius:12px;padding:12px;border:1px solid #e2e8f0}
+.venn-wrap svg{max-width:100%;height:auto}
+.legend{font-size:12.5px;text-align:left;margin-bottom:12px;line-height:1.5;color:#334155;background:#f0f7ff;padding:10px 12px;border-radius:8px;border-left:4px solid #2a5298}
+.q-block{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:10px;text-align:left}
+.q-block .q-num{font-weight:700;color:#2a5298;margin-bottom:4px;font-size:13px}
+.q-block .q-text{font-size:14px;margin-bottom:8px;line-height:1.4}
+.q-block input{width:100%;padding:10px;font-size:15px;border:2px solid #ddd;border-radius:8px;text-align:center;outline:none}
+.q-block input:focus{border-color:#2a5298}
+.q-block input:disabled{background:#f1f5f9}
+.feedback-line{margin-top:6px;font-size:13px;font-weight:600;display:none}
+.feedback-line.ok{color:#155724;display:block}
+.feedback-line.bad{color:#721c24;display:block}
+.hint{font-size:11px;color:#888;margin:4px 0 10px;text-align:left}
+button.main-btn{background:#2a5298;color:#fff;border:none;padding:13px 24px;font-size:15px;font-weight:600;border-radius:8px;cursor:pointer;width:100%;margin-top:6px}
+button.main-btn:hover{background:#1e3c72}
+button.next-btn{background:#059669}
+button.next-btn:hover{background:#047857}
+.hidden{display:none!important}
+.results h2{text-align:center;color:#1e3c72;margin-bottom:12px}
+.result-summary{background:#f8f9fa;padding:12px;border-radius:10px;margin-bottom:14px}
+.result-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:12px;gap:8px}
+.result-item:last-child{border-bottom:none}
+.badge{padding:3px 7px;border-radius:4px;font-weight:bold;font-size:11px;white-space:nowrap}
+.badge.correct{background:#d4edda;color:#155724}
+.badge.incorrect{background:#f8d7da;color:#721c24}
+.scroll-area{max-height:240px;overflow-y:auto;margin-bottom:14px;border:1px solid #eee;border-radius:8px;padding:8px}
+.example-box{background:#f0f7ff;border-left:4px solid #2a5298;padding:10px 12px;margin:12px 0 16px;font-size:12px;color:#334155;border-radius:0 8px 8px 0;line-height:1.45;text-align:left}
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="start-screen">
+    <h1>Kümeler Egzersizleri</h1>
+    <p class="subtitle">Venn diyagramı üzerinden kesişim, birleşim, tümleyen.<br>5 senaryo. Süre sınırı yoktur.</p>
+    <div class="example-box">
+      Cevapları küme olarak yazın: <code>{a,c,e}</code> veya boş küme <code>{}</code><br>
+      Sıra önemli değil.
+    </div>
+    <button class="main-btn" onclick="startTest()">Testi Başlat</button>
+  </div>
+
+  <div id="quiz-screen" class="hidden">
+    <div class="stats-bar">
+      <span>Senaryo: <span id="sc-num">1</span>/5</span>
+      <span style="color:#64748b;font-size:13px">Süre sınırı yok</span>
+    </div>
+    <div id="legend-area"></div>
+    <div class="venn-wrap" id="venn-area"></div>
+    <div id="questions-area"></div>
+    <div class="hint">Diyagramdaki harfleri kullanarak cevaplayın. Sonra “Kontrol Et”.</div>
+    <button class="main-btn" id="check-btn" onclick="checkAll()">Kontrol Et</button>
+    <button class="main-btn next-btn hidden" id="next-btn" onclick="goNext()">Sonraki Senaryo →</button>
+  </div>
+
+  <div id="result-screen" class="hidden">
+    <div class="results">
+      <h2>Test Tamamlandı!</h2>
+      <div class="result-summary">
+        <div class="result-item"><span>Doğru:</span><strong id="correct-count" style="color:#27ae60">0</strong></div>
+        <div class="result-item"><span>Yanlış:</span><strong id="wrong-count" style="color:#c0392b">0</strong></div>
+      </div>
+      <div class="scroll-area" id="details-list"></div>
+      <button class="main-btn" onclick="resetTest()">Yeni Sorularla Tekrar Dene</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let scenarios=[], current=0, allAnswers=[], answered=false;
+
+function shuffle(a){const x=a.slice();for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x}
+function setStr(s){if(!s||s.size===0)return '{}';return '{'+[...s].sort().join(',')+'}'}
+function parseSet(str){
+  if(!str)return null;
+  let s=str.trim().toLowerCase().replace(/\s+/g,'').replace(/∅/g,'{}');
+  if(s==='{}'||s==='∅')return new Set();
+  const m=s.match(/^\{([^}]*)\}$/);
+  if(!m)return null;
+  if(!m[1])return new Set();
+  return new Set(m[1].split(',').filter(x=>x));
+}
+function setsEqual(a,b){if(!a||!b||a.size!==b.size)return false;for(let x of a)if(!b.has(x))return false;return true}
+
+/* ========== SVG VENN ÇİZİCİLER ========== */
+function svg2sets(labels){
+  // labels: {onlyA, onlyB, both, out}
+  const L=labels;
+  return `<svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
+    <rect x="8" y="8" width="304" height="184" fill="none" stroke="#94a3b8" stroke-width="2" rx="4"/>
+    <text x="18" y="28" font-size="14" font-weight="700" fill="#64748b">E</text>
+    <circle cx="120" cy="100" r="70" fill="#93c5fd" fill-opacity="0.45" stroke="#1e40af" stroke-width="2.5"/>
+    <circle cx="200" cy="100" r="70" fill="#fca5a5" fill-opacity="0.45" stroke="#b91c1c" stroke-width="2.5"/>
+    <text x="70" y="50" font-size="15" font-weight="700" fill="#1e3a8a">A</text>
+    <text x="230" y="50" font-size="15" font-weight="700" fill="#991b1b">B</text>
+    <text x="78" y="105" font-size="14" font-weight="600" fill="#1e293b">${L.onlyA||''}</text>
+    <text x="152" y="105" font-size="14" font-weight="600" fill="#1e293b">${L.both||''}</text>
+    <text x="220" y="105" font-size="14" font-weight="600" fill="#1e293b">${L.onlyB||''}</text>
+    <text x="270" y="170" font-size="13" font-weight="600" fill="#475569">${L.out||''}</text>
+  </svg>`;
+}
+
+function svg3sets(labels){
+  // labels: onlyA, onlyB, onlyC, AB, AC, BC, ABC, out
+  const L=labels;
+  return `<svg viewBox="0 0 340 260" xmlns="http://www.w3.org/2000/svg">
+    <rect x="6" y="6" width="328" height="248" fill="none" stroke="#94a3b8" stroke-width="2" rx="4"/>
+    <text x="16" y="26" font-size="14" font-weight="700" fill="#64748b">E</text>
+    <circle cx="130" cy="110" r="72" fill="#93c5fd" fill-opacity="0.4" stroke="#1e40af" stroke-width="2.5"/>
+    <circle cx="210" cy="110" r="72" fill="#fca5a5" fill-opacity="0.4" stroke="#b91c1c" stroke-width="2.5"/>
+    <circle cx="170" cy="170" r="72" fill="#86efac" fill-opacity="0.4" stroke="#166534" stroke-width="2.5"/>
+    <text x="70" y="55" font-size="14" font-weight="700" fill="#1e3a8a">A</text>
+    <text x="250" y="55" font-size="14" font-weight="700" fill="#991b1b">B</text>
+    <text x="155" y="245" font-size="14" font-weight="700" fill="#166534">C</text>
+    <!-- region labels -->
+    <text x="95" y="95" font-size="13" font-weight="600" fill="#1e293b">${L.onlyA||''}</text>
+    <text x="225" y="95" font-size="13" font-weight="600" fill="#1e293b">${L.onlyB||''}</text>
+    <text x="155" y="210" font-size="13" font-weight="600" fill="#1e293b">${L.onlyC||''}</text>
+    <text x="155" y="95" font-size="13" font-weight="600" fill="#1e293b">${L.AB||''}</text>
+    <text x="115" y="150" font-size="13" font-weight="600" fill="#1e293b">${L.AC||''}</text>
+    <text x="200" y="150" font-size="13" font-weight="600" fill="#1e293b">${L.BC||''}</text>
+    <text x="155" y="135" font-size="13" font-weight="600" fill="#1e293b">${L.ABC||''}</text>
+    <text x="290" y="230" font-size="12" font-weight="600" fill="#475569">${L.out||''}</text>
+  </svg>`;
+}
+
+/* Bölgelere eleman yerleştir (rastgele harfler) */
+const LETTERS='abcdefghjklmnpqrst'.split('');
+
+function place2(){
+  const pool=shuffle(LETTERS);
+  let i=0;
+  const onlyA=pool[i++]; const onlyB=pool[i++]; const both=pool[i++];
+  const out=pool[i++]+','+pool[i++];
+  const A=new Set([onlyA,both]);
+  const B=new Set([onlyB,both]);
+  const U=new Set([onlyA,onlyB,both,...out.split(',')]);
+  return {
+    labels:{onlyA, onlyB, both, out},
+    A,B,U,
+    svg: svg2sets({onlyA, onlyB, both, out})
+  };
+}
+
+function place3(){
+  const pool=shuffle(LETTERS);
+  let i=0;
+  const onlyA=pool[i++], onlyB=pool[i++], onlyC=pool[i++];
+  const AB=pool[i++], AC=pool[i++], BC=pool[i++], ABC=pool[i++];
+  const out=pool[i++];
+  const A=new Set([onlyA,AB,AC,ABC]);
+  const B=new Set([onlyB,AB,BC,ABC]);
+  const C=new Set([onlyC,AC,BC,ABC]);
+  const U=new Set([onlyA,onlyB,onlyC,AB,AC,BC,ABC,out]);
+  return {
+    labels:{onlyA,onlyB,onlyC,AB,AC,BC,ABC,out},
+    A,B,C,U,
+    svg: svg3sets({onlyA,onlyB,onlyC,AB,AC,BC,ABC,out})
+  };
+}
+
+function inter(x,y){const r=new Set();for(let e of x)if(y.has(e))r.add(e);return r}
+function union(x,y){const r=new Set(x);for(let e of y)r.add(e);return r}
+function diff(x,y){const r=new Set();for(let e of x)if(!y.has(e))r.add(e);return r}
+function comp(U,x){return diff(U,x)}
+
+/* ========== SENARYOLAR ========== */
+function sc2basic(){
+  const p=place2();
+  return {
+    title:'2 Kümeli Venn',
+    legend:'<b>A</b> ve <b>B</b> kümeleri. E = evrensel küme. Harfler elemanlardır.',
+    svg:p.svg,
+    questions:[
+      {text:'A ∩ B = ?', answer:inter(p.A,p.B)},
+      {text:'A ∪ B = ?', answer:union(p.A,p.B)},
+      {text:'A \\ B = ?', answer:diff(p.A,p.B)},
+      {text:'A′ = ?', answer:comp(p.U,p.A)}
+    ]
+  };
+}
+
+function sc2comp(){
+  const p=place2();
+  return {
+    title:'2 Kümeli – Tümleyen & Fark',
+    legend:'Diyagramdaki harfleri kullanarak işlemleri yapın.',
+    svg:p.svg,
+    questions:[
+      {text:'(A ∪ B)′ = ?', answer:comp(p.U,union(p.A,p.B))},
+      {text:'A′ ∩ B = ?', answer:inter(comp(p.U,p.A),p.B)},
+      {text:'A′ ∪ B′ = ?', answer:union(comp(p.U,p.A),comp(p.U,p.B))}
+    ]
+  };
+}
+
+function sc3basic(){
+  const p=place3();
+  return {
+    title:'3 Kümeli Venn',
+    legend:'<b>A</b>, <b>B</b>, <b>C</b> kümeleri. Ortadaki ortak bölgeye dikkat.',
+    svg:p.svg,
+    questions:[
+      {text:'A ∩ B ∩ C = ?', answer:inter(inter(p.A,p.B),p.C)},
+      {text:'A ∩ (B ∪ C) = ?', answer:inter(p.A,union(p.B,p.C))},
+      {text:'(A ∪ B) ∩ C = ?', answer:inter(union(p.A,p.B),p.C)}
+    ]
+  };
+}
+
+function sc3advanced(){
+  const p=place3();
+  return {
+    title:'3 Kümeli – Karma İşlem',
+    legend:'Diyagramı inceleyerek cevaplayın.',
+    svg:p.svg,
+    questions:[
+      {text:'(A ∩ B) ∪ C = ?', answer:union(inter(p.A,p.B),p.C)},
+      {text:'A \\ (B ∪ C) = ?', answer:diff(p.A,union(p.B,p.C))},
+      {text:'(A ∪ B ∪ C)′ = ?', answer:comp(p.U,union(union(p.A,p.B),p.C))}
+    ]
+  };
+}
+
+function scStoryVisual(){
+  // Hikâyeli ama yine görsel 3 set
+  const p=place3();
+  const names={A:'Futbol sevenler',B:'Basketbol sevenler',C:'Voleybol kursuna gidenler'};
+  return {
+    title:'Hikâye + Venn (Spor)',
+    legend:`<b>A</b>: ${names.A} &nbsp;|&nbsp; <b>B</b>: ${names.B} &nbsp;|&nbsp; <b>C</b>: ${names.C}<br>Harfler kişileri temsil eder.`,
+    svg:p.svg,
+    questions:[
+      {text:'Hem futbol hem basketbol sevenler? (A ∩ B)', answer:inter(p.A,p.B)},
+      {text:'Üç sporu da yapanlar? (A ∩ B ∩ C)', answer:inter(inter(p.A,p.B),p.C)},
+      {text:'Sadece voleybol kursuna gidenler? (C \\ (A ∪ B))', answer:diff(p.C,union(p.A,p.B))},
+      {text:'Hiçbir spora katılmayanlar? ((A ∪ B ∪ C)′)', answer:comp(p.U,union(union(p.A,p.B),p.C))}
+    ]
+  };
+}
+
+function generateAll(){
+  const fns=[sc2basic,sc2comp,sc3basic,sc3advanced,scStoryVisual];
+  return shuffle(fns).map(f=>f());
+}
+
+function startTest(){
+  scenarios=generateAll();
+  current=0; allAnswers=[]; answered=false;
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('result-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.remove('hidden');
+  showScenario();
+}
+
+function showScenario(){
+  answered=false;
+  const sc=scenarios[current];
+  document.getElementById('sc-num').textContent=current+1;
+  document.getElementById('legend-area').innerHTML=`<div class="legend">${sc.legend}</div>`;
+  document.getElementById('venn-area').innerHTML=sc.svg;
+
+  let html='';
+  sc.questions.forEach((q,i)=>{
+    html+=`<div class="q-block">
+      <div class="q-num">Soru ${i+1}</div>
+      <div class="q-text">${q.text}</div>
+      <input type="text" id="ans-${i}" placeholder="{a,c} veya {}" autocomplete="off">
+      <div class="feedback-line" id="fb-${i}"></div>
+    </div>`;
+  });
+  document.getElementById('questions-area').innerHTML=html;
+  document.getElementById('check-btn').classList.remove('hidden');
+  document.getElementById('next-btn').classList.add('hidden');
+  const f=document.getElementById('ans-0'); if(f) f.focus();
+}
+
+function checkAll(){
+  if(answered) return;
+  const sc=scenarios[current];
+  sc.questions.forEach((q,i)=>{
+    const raw=document.getElementById('ans-'+i).value;
+    const user=parseSet(raw);
+    const ok=setsEqual(user,q.answer);
+    const fb=document.getElementById('fb-'+i);
+    document.getElementById('ans-'+i).disabled=true;
+    if(ok){ fb.className='feedback-line ok'; fb.textContent='✅ Doğru'; }
+    else { fb.className='feedback-line bad'; fb.textContent='❌ Doğru: '+setStr(q.answer); }
+    allAnswers.push({scenario:sc.title, qtext:q.text, user:raw||'(boş)', correct:setStr(q.answer), ok});
+  });
+  answered=true;
+  document.getElementById('check-btn').classList.add('hidden');
+  document.getElementById('next-btn').classList.remove('hidden');
+}
+
+function goNext(){
+  current++;
+  if(current<scenarios.length) showScenario();
+  else finish();
+}
+
+function finish(){
+  document.getElementById('quiz-screen').classList.add('hidden');
+  document.getElementById('result-screen').classList.remove('hidden');
+  let correct=0,wrong=0;
+  const box=document.getElementById('details-list'); box.innerHTML='';
+  allAnswers.forEach((item,idx)=>{
+    if(item.ok) correct++; else wrong++;
+    const div=document.createElement('div'); div.className='result-item';
+    let extra=item.ok?'':'<span style="color:#c0392b">Doğru: '+item.correct+'</span>';
+    div.innerHTML=`<div style="max-width:75%"><strong>${idx+1}. ${item.qtext}</strong><br><span style="font-size:11px;color:#64748b">${item.scenario}</span><br>Sizin: ${item.user}<br>${extra}</div>
+      <span class="badge ${item.ok?'correct':'incorrect'}">${item.ok?'Doğru':'Yanlış'}</span>`;
+    box.appendChild(div);
+  });
+  document.getElementById('correct-count').textContent=correct;
+  document.getElementById('wrong-count').textContent=wrong;
+}
+
+function resetTest(){
+  document.getElementById('result-screen').classList.add('hidden');
+  document.getElementById('start-screen').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
